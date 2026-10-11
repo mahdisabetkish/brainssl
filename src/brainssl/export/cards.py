@@ -153,5 +153,5 @@ restriction.
 
 
 def write_cards(segmentation_dir: Path, connectome_dir: Path, results: dict) -> None:
-    (segmentation_dir / "README.md").write_text(segmentation_card(results), encoding="utf-8")
-    (connectome_dir / "README.md").write_text(connectome_card(results), encoding="utf-8")
+    (segmentation_dir / "README.md").write_text(segmentation_card(results), encoding="utf-8", newline="\n")
+    (connectome_dir / "README.md").write_text(connectome_card(results), encoding="utf-8", newline="\n")

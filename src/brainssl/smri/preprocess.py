@@ -273,4 +273,4 @@ def labels_from_regions(regions: np.ndarray) -> np.ndarray:
 
 def save_splits(splits: dict, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(splits, indent=1))
+    path.write_text(json.dumps(splits, indent=1), newline="\n")

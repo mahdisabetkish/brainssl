@@ -47,7 +47,7 @@ def main() -> None:
     record = {"vicinal_C": chosen, "development_auc": table,
               "rule": "highest mean development AUC (split seeds 0-2), ties to the smaller C",
               "ensemble": "all five atlases, probabilities averaged", "primary_metric": "AUC"}
-    args.out.write_text(json.dumps(record, indent=2) + "\n")
+    args.out.write_text(json.dumps(record, indent=2) + "\n", newline="\n")
     print(json.dumps(record, indent=2))
 
 
