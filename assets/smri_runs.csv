@@ -1,0 +1,13 @@
+tag,stage,bilateral,masking,budget,init,iterations,seed
+pretrain_bilateral_contralateral,pretrain,true,contralateral,,,10000,0
+ft_unet_scratch_10pct,finetune,false,,10pct,,3000,0
+ft_ours_10pct,finetune,true,,10pct,pretrain_bilateral_contralateral,3000,0
+ft_unet_scratch_100pct,finetune,false,,100pct,,8000,0
+ft_ours_100pct,finetune,true,,100pct,pretrain_bilateral_contralateral,8000,0
+ft_unet_scratch_25pct,finetune,false,,25pct,,5000,0
+ft_ours_25pct,finetune,true,,25pct,pretrain_bilateral_contralateral,5000,0
+ft_unet_scratch_5pct,finetune,false,,5pct,,2500,0
+ft_ours_5pct,finetune,true,,5pct,pretrain_bilateral_contralateral,2500,0
+pretrain_unet_random,pretrain,false,random,,,10000,0
+ft_unet_mim_10pct,finetune,false,,10pct,pretrain_unet_random,3000,0
+ft_bilateral_scratch_10pct,finetune,true,,10pct,,3000,0

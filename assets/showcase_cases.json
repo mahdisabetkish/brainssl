@@ -1,0 +1,9 @@
+{
+  "rule": "median-volume test scan of each quartile of reference tumour volume",
+  "cases": [
+    "BRATS_315",
+    "BRATS_478",
+    "BRATS_345",
+    "BRATS_320"
+  ]
+}

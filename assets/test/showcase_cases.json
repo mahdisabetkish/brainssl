@@ -1,0 +1,4 @@
+{
+  "rule": "two test scans of the synthetic data",
+  "cases": ["BRATS_002", "BRATS_006"]
+}
