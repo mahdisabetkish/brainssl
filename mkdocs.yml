@@ -1,0 +1,73 @@
+site_name: brainssl
+site_description: Label-efficient learning on brain MRI and fMRI
+site_author: Mahdi Sabet Kish
+site_url: https://mahdisabetkish.github.io/brainssl/docs/
+repo_url: https://github.com/mahdisabetkish/brainssl
+repo_name: mahdisabetkish/brainssl
+edit_uri: edit/main/docs/
+copyright: Code MIT. Data under the licences of MSD (CC BY-SA 4.0) and ABIDE.
+
+theme:
+  name: material
+  font:
+    text: IBM Plex Sans
+    code: IBM Plex Mono
+  palette:
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue grey
+      accent: light blue
+      toggle:
+        icon: material/weather-sunny
+        name: Light theme
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue grey
+      accent: blue
+      toggle:
+        icon: material/weather-night
+        name: Dark theme
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - content.code.copy
+    - search.highlight
+  icon:
+    repo: fontawesome/brands/github
+
+nav:
+  - Home: index.md
+  - Primers:
+      - Brain tumour MRI: primer/mri.md
+      - Resting-state fMRI: primer/fmri.md
+  - Methods:
+      - Bilateral U-Net and contralateral masking: methods/smri.md
+      - Noise-aware connectome classifier: methods/fmri.md
+  - Evaluation protocol: protocol.md
+  - Results: results.md
+  - Reproduce:
+      - Pipeline, Docker, cluster: reproduce.md
+      - Inference outside Python: deploy.md
+  - Dashboard: https://mahdisabetkish.github.io/brainssl/
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.details
+
+extra_javascript:
+  - javascripts/katex.js
+  - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js
+  - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/contrib/auto-render.min.js
+
+extra_css:
+  - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css
