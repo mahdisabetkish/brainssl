@@ -1,0 +1,4 @@
+method,scheme,args
+mlp_cc200,kfold,--model deep --arch mlp --atlases cc200
+brainnetcnn_cc200,kfold,--model deep --arch brainnetcnn --atlases cc200
+bnt_cc200,kfold,--model deep --arch bnt --atlases cc200

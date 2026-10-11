@@ -1,0 +1,6 @@
+{
+  "vicinal_C": {"cc200": 0.0001, "aal": 0.0001},
+  "rule": "fixed for the synthetic test data",
+  "ensemble": "all atlases, probabilities averaged",
+  "primary_metric": "AUC"
+}
