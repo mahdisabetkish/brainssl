@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>brainssl · MRI and fMRI</title>
+  <meta name="description" content="Label-efficient learning on brain MRI and fMRI: a bilateral U-Net pretrained by contralateral masked modelling for tumour segmentation, and connectome classifiers trained on each scan's own estimation noise.">
+  <meta property="og:title" content="brainssl · label-efficient learning on brain MRI and fMRI">
+  <meta property="og:description" content="Interactive results: 3D tumour viewer, label-efficiency curves, connectome explorer, and models running in your browser.">
+  <meta property="og:image" content="assets/img/social.png">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/app.css">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("brainssl-theme");
+        if (t) document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16"/><ellipse cx="12" cy="12" rx="5.2" ry="6"/><path d="M12 6v12"/></symbol>
+    <symbol id="i-curve" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4M4 20h16"/><path d="M6.5 16c3-6 6-8.5 12-10"/><path d="M6.5 18c3.5-4 7-5.5 12-6.5"/></symbol>
+    <symbol id="i-graph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="7" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="13" r="2"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="17" r="2"/><path d="m7.6 8.2 3 3.4M16.3 7.2l-3 4.2M10.6 14.4l-2.4 2.3M13.8 13.8l2.5 2.2M8 7l8-.8"/></symbol>
+    <symbol id="i-bars" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M7 20v-7M12 20V7M17 20v-10"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="m10 8.8 5 3.2-5 3.2z"/></symbol>
+    <symbol id="i-flask" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3.5h5M10.5 3.5v5.2L5.4 17.5A2 2 0 0 0 7.1 20.5h9.8a2 2 0 0 0 1.7-3L13.5 8.7V3.5"/><path d="M7.6 14h8.8"/></symbol>
+    <symbol id="i-cog" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></symbol>
+    <symbol id="i-github" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5a9.5 9.5 0 0 0-3 18.5c.5.1.6-.2.6-.5v-1.7c-2.6.6-3.2-1.1-3.2-1.1-.4-1.1-1-1.4-1-1.4-.9-.6 0-.6 0-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.3-2.1-.2-4.3-1-4.3-4.6 0-1 .4-1.9 1-2.5-.1-.3-.4-1.2.1-2.5 0 0 .8-.3 2.6 1a9 9 0 0 1 4.8 0c1.8-1.3 2.6-1 2.6-1 .5 1.3.2 2.2.1 2.5.6.6 1 1.5 1 2.5 0 3.6-2.2 4.4-4.3 4.6.3.3.6.8.6 1.6v2.4c0 .3.2.6.7.5A9.5 9.5 0 0 0 12 2.5Z"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 5.5A2 2 0 0 1 6.5 3.5h12v14h-12a2 2 0 0 0-2 2z"/><path d="M4.5 19.5a2 2 0 0 0 2 2h12v-4"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 7v10l8 4 8-4V7z"/><path d="m4 7 8 4 8-4M12 11v10"/></symbol>
+    <symbol id="i-hf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M9 10h.01M15 10h.01"/><path d="M8.5 14c1 1.4 2.2 2 3.5 2s2.5-.6 3.5-2"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8"/></symbol>
+  </defs>
+</svg>
+
+<div class="app">
+  <aside class="rail" aria-label="Sections">
+    <a class="brand" href="#overview">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <defs><linearGradient id="bm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6ab0ff"/><stop offset="1" stop-color="#3987e5"/></linearGradient></defs>
+        <path d="M15 4.5c-5.6.4-10 4.5-10 11.2C5 22.4 9.4 27 15 27.5z" fill="none" stroke="url(#bm)" stroke-width="2"/>
+        <path d="M17 4.5c5.6.4 10 4.5 10 11.2 0 6.7-4.4 11.3-10 11.8z" fill="url(#bm)" opacity="0.9"/>
+        <path d="M16 3v26" stroke="currentColor" stroke-width="1.2" stroke-dasharray="2 2" opacity="0.5"/>
+      </svg>
+      <span><span class="brand-name">brainssl</span><span class="brand-sub">brain MRI and fMRI</span></span>
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a href="#overview" data-view="overview"><svg><use href="#i-home"/></svg>Overview</a>
+      <div class="nav-label">Structural MRI</div>
+      <a href="#viewer" data-view="viewer"><svg><use href="#i-scan"/></svg>Tumour viewer</a>
+      <a href="#efficiency" data-view="efficiency"><svg><use href="#i-curve"/></svg>Label efficiency</a>
+      <div class="nav-label">Resting-state fMRI</div>
+      <a href="#connectome" data-view="connectome"><svg><use href="#i-graph"/></svg>Connectome</a>
+      <a href="#classifiers" data-view="classifiers"><svg><use href="#i-bars"/></svg>Classifiers</a>
+      <div class="nav-label">Hands on</div>
+      <a href="#demo" data-view="demo"><svg><use href="#i-play"/></svg>Run the models</a>
+      <a href="#method" data-view="method"><svg><use href="#i-flask"/></svg>How it works</a>
+      <a href="#reproduce" data-view="reproduce"><svg><use href="#i-cog"/></svg>Reproduce</a>
+    </nav>
+    <div class="rail-foot">
+      <div class="rail-links">
+        <a class="icon-btn" href="https://github.com/mahdisabetkish/brainssl" title="Source on GitHub"><svg><use href="#i-github"/></svg></a>
+        <a class="icon-btn" href="docs/" title="Documentation"><svg><use href="#i-book"/></svg></a>
+        <a class="icon-btn" href="https://hub.docker.com/r/mahdisabetkish/brainssl" title="Docker images"><svg><use href="#i-box"/></svg></a>
+        <a class="icon-btn" href="https://huggingface.co/mahdisabetkish" title="Models on Hugging Face"><svg><use href="#i-hf"/></svg></a>
+      </div>
+      <button class="icon-btn" id="theme-toggle" type="button" title="Switch theme"><svg><use href="#i-sun"/></svg><span>Theme</span></button>
+    </div>
+  </aside>
+
+  <nav class="mobile-nav" aria-label="Sections">
+    <a href="#overview" data-view="overview">Overview</a>
+    <a href="#viewer" data-view="viewer">Tumour viewer</a>
+    <a href="#efficiency" data-view="efficiency">Label efficiency</a>
+    <a href="#connectome" data-view="connectome">Connectome</a>
+    <a href="#classifiers" data-view="classifiers">Classifiers</a>
+    <a href="#demo" data-view="demo">Run the models</a>
+    <a href="#method" data-view="method">How it works</a>
+    <a href="#reproduce" data-view="reproduce">Reproduce</a>
+  </nav>
+
+  <main id="main">
+    <!-- ============================================================ overview -->
+    <section class="view" id="view-overview" aria-labelledby="h-overview">
+      <div class="hero">
+        <div class="card stack" style="justify-content:center">
+          <span class="eyebrow">Two studies, one question</span>
+          <h1 id="h-overview">How far can structure and unlabelled data stretch a few annotations?</h1>
+          <p class="lede">Brain tumour segmentation on multi-contrast MRI and autism classification from
+            resting-state fMRI, each with a model built around a property of the data that the usual
+            baseline ignores: the left-right symmetry of the brain, and the estimation noise of a
+            connectome measured from a few minutes of signal.</p>
+          <div class="hero-actions">
+            <a class="btn primary" href="#viewer"><svg><use href="#i-scan"/></svg>Open the tumour viewer</a>
+            <a class="btn" href="#demo"><svg><use href="#i-play"/></svg>Run a model in the browser</a>
+            <a class="btn" href="docs/"><svg><use href="#i-book"/></svg>Read the docs</a>
+          </div>
+        </div>
+        <div class="hero-visual" id="hero-visual">
+          <canvas id="hero-canvas" aria-label="3D rendering of a brain tumour segmentation"></canvas>
+          <div class="hero-caption">
+            <div class="chip-row" id="hero-legend">
+              <span class="chip"><i class="swatch" style="background:var(--label-oedema)"></i>oedema</span>
+              <span class="chip"><i class="swatch" style="background:var(--label-core)"></i>non-enhancing core</span>
+              <span class="chip"><i class="swatch" style="background:var(--label-enhancing)"></i>enhancing</span>
+            </div>
+            <span class="chip" id="hero-case">held-out test scan</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid g-4" id="overview-stats"></div>
+
+      <div class="grid g-2" style="margin-top:18px">
+        <article class="card">
+          <div class="card-head"><div><span class="eyebrow">Structural MRI</span><h2>Bilateral U-Net</h2></div></div>
+          <p class="muted small">MSD Task01 (BraTS): 750 scans, four contrasts each. Every encoder level can read
+            the features of its mirror image across the midline, and the network is pretrained without labels by
+            reconstructing hidden tissue from its contralateral twin.</p>
+          <div id="overview-smri-chart" class="chart"></div>
+          <div class="tagline"><span class="tag">3D U-Net</span><span class="tag">masked image modelling</span><span class="tag">Dice · HD95</span><span class="tag">96 test scans</span></div>
+        </article>
+        <article class="card">
+          <div class="card-head"><div><span class="eyebrow">Resting-state fMRI</span><h2>Noise-aware connectome classifier</h2></div></div>
+          <p class="muted small">ABIDE I: 871 scans from 20 sites. Each scan's connectome is re-estimated on six
+            sub-windows, and the classifier is trained on that spread rather than on one point per subject, which
+            penalises connections that are not reproducible within a scan.</p>
+          <div id="overview-fmri-chart" class="chart"></div>
+          <div class="tagline"><span class="tag">SPD geometry</span><span class="tag">vicinal risk</span><span class="tag">5 atlases</span><span class="tag">5 × 10-fold + leave-site-out</span></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============================================================ viewer -->
+    <section class="view" id="view-viewer" aria-labelledby="h-viewer">
+      <div class="view-head">
+        <div><span class="eyebrow">Structural MRI · test scans</span><h1 id="h-viewer">Tumour viewer</h1>
+          <p class="lede">Four co-registered contrasts with the reference annotation and the predictions of both
+            models trained on 10% of the labels. Drag to rotate in 3D, scroll to move through slices.</p></div>
+      </div>
+      <div class="grid g-viewer">
+        <div class="card stack">
+          <h3>Scan</h3>
+          <div class="case-list" id="case-list"><div class="pending">loading</div></div>
+          <label class="field">Contrast
+            <select id="contrast"><option value="FLAIR">FLAIR</option><option value="T1Gd">T1 with gadolinium</option><option value="T1">T1</option><option value="T2">T2</option></select>
+          </label>
+          <label class="field">Overlay
+            <select id="overlay">
+              <option value="ours">Bilateral U-Net (ours)</option>
+              <option value="baseline">U-Net from scratch</option>
+              <option value="truth">Reference annotation</option>
+              <option value="errors">Errors of ours vs reference</option>
+              <option value="none">None</option>
+            </select>
+          </label>
+          <label class="field">Overlay opacity <input type="range" id="opacity" min="0" max="1" step="0.05" value="0.6"></label>
+          <div class="field">View
+            <div class="segmented" id="view-mode" role="group" aria-label="View">
+              <button type="button" data-mode="3" aria-pressed="true">Planes</button>
+              <button type="button" data-mode="0" aria-pressed="false">Axial</button>
+              <button type="button" data-mode="4" aria-pressed="false">3D</button>
+            </div>
+          </div>
+          <label class="field" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="mirror"> Show left-right asymmetry, the difference between the scan and its mirror image</label>
+        </div>
+        <div class="stack">
+          <div class="viewer-wrap"><canvas id="viewer-canvas"></canvas>
+            <span class="chip viewer-badge" id="viewer-badge">loading</span>
+            <span class="viewer-hint">drag · scroll · right-drag for contrast</span></div>
+          <div class="legend" id="viewer-legend">
+            <span><i class="swatch" style="background:var(--label-oedema)"></i>oedema</span>
+            <span><i class="swatch" style="background:var(--label-core)"></i>non-enhancing core</span>
+            <span><i class="swatch" style="background:var(--label-enhancing)"></i>enhancing tumour</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div><h3>This scan</h3><p>Dice (higher is better) and HD95 in mm (lower is better)</p></div></div>
+          <div id="case-metrics" class="table-scroll"><div class="pending">select a scan</div></div>
+          <p class="muted small" style="margin-top:14px" id="case-note"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ efficiency -->
+    <section class="view" id="view-efficiency" aria-labelledby="h-eff">
+      <div class="view-head">
+        <div><span class="eyebrow">Structural MRI · 96 held-out scans</span><h1 id="h-eff">Label efficiency</h1>
+          <p class="lede">The same U-Net backbone, data pipeline and training budget at every point; only the
+            bilateral blocks and the pretraining differ. Bars are 95% bootstrap intervals over test scans.</p></div>
+        <div class="segmented" id="region-select" role="group" aria-label="Region">
+          <button type="button" data-region="mean" aria-pressed="true">Mean</button>
+          <button type="button" data-region="WT" aria-pressed="false">Whole tumour</button>
+          <button type="button" data-region="TC" aria-pressed="false">Core</button>
+          <button type="button" data-region="ET" aria-pressed="false">Enhancing</button>
+        </div>
+      </div>
+      <div class="grid g-main">
+        <div class="card"><div class="card-head"><div><h3>Dice against the number of annotated scans</h3><p id="eff-sub"></p></div><button class="icon-btn chart-toggle" data-table-for="eff-chart" type="button">Table</button></div>
+          <div id="eff-chart" class="chart"></div></div>
+        <div class="card"><div class="card-head"><div><h3>Scan by scan</h3><p id="paired-sub">Each dot is a test scan; above the diagonal, ours is better.</p></div>
+          <select id="paired-budget" aria-label="Label budget"></select></div>
+          <div id="paired-chart" class="chart"></div></div>
+        <div class="card"><div class="card-head"><div><h3>What each part contributes</h3><p>10% of labels, mean Dice</p></div><button class="icon-btn chart-toggle" data-table-for="ablation-chart" type="button">Table</button></div>
+          <div id="ablation-chart" class="chart"></div></div>
+        <div class="card"><div class="card-head"><div><h3>Boundary error</h3><p>HD95 in mm, mean over test scans</p></div></div>
+          <div id="hd-table" class="table-scroll"></div></div>
+      </div>
+    </section>
+
+    <!-- ============================================================ connectome -->
+    <section class="view" id="view-connectome" aria-labelledby="h-conn">
+      <div class="view-head">
+        <div><span class="eyebrow">Resting-state fMRI · deployed model</span><h1 id="h-conn">Connectome</h1>
+          <p class="lede">The connections the classifier weighs most, drawn between region centres in MNI space.
+            Warm-coloured edges push the prediction towards autism, blue ones towards typical development. Weights are those of the model fitted
+            on all 871 subjects, in units of standardised features.</p></div>
+      </div>
+      <div class="grid g-viewer">
+        <div class="card stack">
+          <label class="field">Atlas <select id="conn-atlas"></select></label>
+          <label class="field">Connections shown <input type="range" id="conn-k" min="10" max="200" step="10" value="60"><span class="muted small" id="conn-k-label"></span></label>
+          <div class="field">Direction
+            <div class="segmented" id="conn-sign" role="group" aria-label="Direction">
+              <button type="button" data-sign="both" aria-pressed="true">Both</button>
+              <button type="button" data-sign="pos" aria-pressed="false">Autism +</button>
+              <button type="button" data-sign="neg" aria-pressed="false">Control +</button>
+            </div>
+          </div>
+          <div class="field">Camera
+            <div class="segmented" id="conn-camera" role="group" aria-label="Camera">
+              <button type="button" data-az="90" data-el="90" aria-pressed="true">Top</button>
+              <button type="button" data-az="180" data-el="0" aria-pressed="false">Left</button>
+              <button type="button" data-az="0" data-el="0" aria-pressed="false">Right</button>
+              <button type="button" data-az="90" data-el="0" aria-pressed="false">Front</button>
+            </div>
+          </div>
+          <p class="muted small">These are weights of a linear classifier on standardised features, not group
+            differences, and a single weight should not be read as an effect size.</p>
+        </div>
+        <div class="viewer-wrap"><canvas id="conn-canvas"></canvas><span class="chip viewer-badge" id="conn-badge">loading</span>
+          <span class="viewer-hint">drag to rotate · scroll to zoom</span></div>
+        <div class="card"><div class="card-head"><div><h3>Strongest connections</h3><p>largest absolute weights</p></div></div>
+          <div id="conn-table" class="table-scroll"></div></div>
+      </div>
+    </section>
+
+    <!-- ============================================================ classifiers -->
+    <section class="view" id="view-classifiers" aria-labelledby="h-clf">
+      <div class="view-head">
+        <div><span class="eyebrow">Resting-state fMRI · 871 subjects, 20 sites</span><h1 id="h-clf">Classifiers</h1>
+          <p class="lede">All models are scored on the same 50 train/test splits (5 repeats of 10-fold
+            cross-validation, stratified by site and diagnosis), and again with each of the 20 sites held out in
+            turn.</p></div>
+        <div class="toolbar">
+          <select id="clf-atlas" aria-label="Atlas"></select>
+          <div class="segmented" id="clf-metric" role="group" aria-label="Metric">
+            <button type="button" data-metric="auc" aria-pressed="true">AUC</button>
+            <button type="button" data-metric="accuracy" aria-pressed="false">Accuracy</button>
+            <button type="button" data-metric="balanced_accuracy" aria-pressed="false">Balanced accuracy</button>
+          </div>
+        </div>
+      </div>
+      <div class="grid g-main">
+        <div class="card span-2"><div class="card-head"><div><h3>Every atlas</h3><p id="atlas-sub">ours against the strongest baseline on each atlas</p></div><button class="icon-btn chart-toggle" data-table-for="atlas-chart" type="button">Table</button></div>
+          <div id="atlas-chart" class="chart"></div></div>
+        <div class="card"><div class="card-head"><div><h3>All models, repeated cross-validation</h3><p id="clf-sub">mean over repeats with 95% bootstrap interval</p></div><button class="icon-btn chart-toggle" data-table-for="clf-chart" type="button">Table</button></div>
+          <div id="clf-chart" class="chart"></div></div>
+        <div class="card"><div class="card-head"><div><h3>Split by split</h3><p id="folds-sub">difference to the strongest baseline on each split</p></div></div>
+          <div id="folds-chart" class="chart"></div></div>
+        <div class="card"><div class="card-head"><div><h3>Leave one site out</h3><p>accuracy on each held-out site, all five atlases</p></div><button class="icon-btn chart-toggle" data-table-for="site-chart" type="button">Table</button></div>
+          <div id="site-chart" class="chart"></div></div>
+        <div class="card"><div class="card-head"><div><h3>Calibration</h3><p>predicted probability against observed frequency, all five atlases</p></div></div>
+          <div id="calib-chart" class="chart"></div></div>
+      </div>
+    </section>
+
+    <!-- ============================================================ demo -->
+    <section class="view" id="view-demo" aria-labelledby="h-demo">
+      <div class="view-head">
+        <div><span class="eyebrow">Nothing leaves your browser</span><h1 id="h-demo">Run the models</h1>
+          <p class="lede">The connectome classifier runs here in plain JavaScript: shrinkage covariance, matrix
+            logarithm by Jacobi rotations, standardisation and the linear score, on scans of subjects that model
+            never saw during training. The segmentation network runs through ONNX Runtime Web.</p></div>
+      </div>
+      <div class="grid g-2">
+        <article class="card stack">
+          <div class="card-head"><div><span class="eyebrow">fMRI</span><h2>Classify a resting-state scan</h2><p>held-out subjects of one cross-validation fold</p></div></div>
+          <div class="toolbar"><select id="demo-subject" aria-label="Subject"></select><select id="demo-atlas" aria-label="Atlas"></select>
+            <button class="btn primary" id="demo-run" type="button"><svg><use href="#i-play"/></svg>Run</button></div>
+          <div id="demo-out"></div>
+          <div id="demo-chart" class="chart"></div>
+          <p class="muted small" id="demo-note"></p>
+        </article>
+        <article class="card stack">
+          <div class="card-head"><div><span class="eyebrow">MRI</span><h2>Segment a scan</h2><p>the bilateral U-Net, 10.8M parameters, fetched from Hugging Face</p></div></div>
+          <div class="toolbar"><select id="seg-case" aria-label="Scan"></select>
+            <button class="btn primary" id="seg-run" type="button"><svg><use href="#i-play"/></svg>Run segmentation</button></div>
+          <div class="progress" aria-hidden="true"><i id="seg-progress"></i></div>
+          <div id="seg-out" class="muted small">Downloads about 43 MB once. Uses WebGPU when your browser has it, otherwise WebAssembly.</div>
+          <div class="viewer-wrap" style="height:340px"><canvas id="seg-canvas"></canvas></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============================================================ method -->
+    <section class="view" id="view-method" aria-labelledby="h-method">
+      <div class="view-head">
+        <div><span class="eyebrow">The ideas, interactively</span><h1 id="h-method">How it works</h1>
+          <p class="lede">Three pictures that carry most of the method. The documentation has the derivations.</p></div>
+      </div>
+      <div class="grid g-3">
+        <article class="card"><h3>Bilateral exchange</h3><p class="muted small">Every position reads its mirror image across the midline. Move the probe.</p><div id="ex-bilateral" class="chart"></div></article>
+        <article class="card"><h3>Contralateral masking</h3><p class="muted small">Each hidden cube has a visible twin on the other side. Compare with ordinary random masking.</p><div id="ex-mask" class="chart"></div></article>
+        <article class="card"><h3>Training on a scan's own noise</h3><p class="muted small">Each subject is a cloud of window connectomes rather than one point.</p><div id="ex-vicinal" class="chart"></div></article>
+      </div>
+    </section>
+
+    <!-- ============================================================ reproduce -->
+    <section class="view" id="view-reproduce" aria-labelledby="h-repro">
+      <div class="view-head">
+        <div><span class="eyebrow">From raw download to this page</span><h1 id="h-repro">Reproduce</h1>
+          <p class="lede">One Nextflow pipeline runs both studies, locally, in Docker or on a cluster; a test profile
+            runs every stage on synthetic data in a few minutes.</p></div>
+      </div>
+      <div class="grid g-main">
+        <div class="card"><h3>Pipeline</h3><div id="dag" class="chart" style="margin-top:12px"></div></div>
+        <div class="stack">
+          <div class="card"><h3>Everything, one command</h3><pre class="code"><button class="icon-btn copy" data-copy type="button" title="Copy"><svg><use href="#i-copy"/></svg></button>nextflow run mahdisabetkish/brainssl -profile docker,gpu</pre></div>
+          <div class="card"><h3>Or step by step</h3><pre class="code"><button class="icon-btn copy" data-copy type="button" title="Copy"><svg><use href="#i-copy"/></svg></button>pip install -e .
+brainssl download abide &amp;&amp; brainssl download msd
+brainssl prepare abide &amp;&amp; brainssl prepare msd
+python scripts/run_smri.py
+python scripts/run_fmri.py
+brainssl report</pre></div>
+          <div class="card"><h3>Inference without Python</h3><pre class="code"><button class="icon-btn copy" data-copy type="button" title="Copy"><svg><use href="#i-copy"/></svg></button>brainssl-infer segment --model exports/segmentation \
+  --input scan.nii.gz --output seg.nii.gz</pre></div>
+          <div class="card" id="env-card"><h3>Hardware behind the numbers</h3><dl class="kv" id="env-kv"></dl></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="tooltip" id="tooltip" role="status" aria-live="polite"></div>
+<script type="module" src="assets/js/app.js"></script>
+</body>
+</html>
