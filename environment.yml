@@ -1,0 +1,12 @@
+# conda env create -f environment.yml && conda activate brainssl
+name: brainssl
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - --extra-index-url https://download.pytorch.org/whl/cu126
+      - torch==2.7.1
+      - -r requirements-lock.txt
+      - -e .

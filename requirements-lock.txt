@@ -1,0 +1,24 @@
+# Exact versions behind the published results (Python 3.11.8).
+# torch==2.7.1 comes from https://download.pytorch.org/whl/cu126 (GPU) or /cpu.
+numpy==2.4.3
+scipy==1.17.1
+pandas==3.0.3
+scikit-learn==1.8.0
+joblib==1.5.3
+threadpoolctl==3.6.0
+nibabel==5.4.2
+nilearn==0.14.1
+PyYAML==6.0.3
+safetensors==0.8.0
+onnx==1.23.1
+onnxruntime==1.30.0
+huggingface_hub==1.19.0
+matplotlib==3.10.9
+requests==2.33.1
+packaging==26.2
+filelock==3.25.2
+fsspec==2026.2.0
+Jinja2==3.1.6
+networkx==3.6.1
+sympy==1.14.0
+typing_extensions==4.15.0

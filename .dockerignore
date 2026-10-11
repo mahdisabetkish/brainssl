@@ -1,0 +1,15 @@
+data/
+runs/
+logs/
+report/
+results/
+work/
+.nextflow*
+rust/target/
+dashboard/
+docs/
+site/
+.git/
+**/__pycache__/
+**/*.egg-info/
+*.pt

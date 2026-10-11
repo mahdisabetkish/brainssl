@@ -1,0 +1,16 @@
+# Runtime dependencies with compatible ranges. requirements-lock.txt pins the
+# exact versions the published results were produced with.
+# PyTorch is installed separately so the CUDA build can be chosen, e.g.
+#   pip install torch==2.7.1 --index-url https://download.pytorch.org/whl/cu126
+numpy>=1.26,<3
+scipy>=1.11
+pandas>=2.1
+scikit-learn>=1.4
+nibabel>=5.2
+pyyaml>=6.0
+safetensors>=0.4
+onnx>=1.16
+onnxruntime>=1.18
+huggingface_hub>=0.24
+matplotlib>=3.8
+nilearn>=0.10

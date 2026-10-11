@@ -1,0 +1,68 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "brainssl"
+version = "1.0.0"
+description = "Label-efficient learning on brain MRI and fMRI: a bilateral U-Net for tumour segmentation and noise-aware connectome classifiers"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Mahdi Sabet Kish", email = "mahdi.sabetkish@gmail.com" }]
+keywords = ["mri", "fmri", "brain-tumour-segmentation", "connectomics", "self-supervised-learning", "pytorch"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+]
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "pandas>=2.1",
+    "scikit-learn>=1.4",
+    "torch>=2.3",
+    "nibabel>=5.2",
+    "pyyaml>=6.0",
+    "safetensors>=0.4",
+]
+
+[project.optional-dependencies]
+export = ["onnx>=1.16", "onnxruntime>=1.18", "huggingface_hub>=0.24"]
+viz = ["matplotlib>=3.8", "nilearn>=0.10"]
+dev = ["pytest>=8", "ruff>=0.5", "mypy>=1.10"]
+
+[project.scripts]
+brainssl = "brainssl.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/mahdisabetkish/brainssl"
+Dashboard = "https://mahdisabetkish.github.io/brainssl/"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "NPY"]
+ignore = ["E741", "B905"]
+
+[tool.ruff.lint.per-file-ignores]
+# model cards and dashboard tables are long text by nature
+"src/brainssl/export/cards.py" = ["E501"]
+"src/brainssl/report/dashboard.py" = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+markers = ["gpu: needs a CUDA device", "slow: takes more than a few seconds"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+warn_unused_ignores = true

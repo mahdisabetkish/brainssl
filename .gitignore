@@ -1,0 +1,39 @@
+# Data and experiment outputs live outside version control
+/data/
+/runs/
+/logs/
+/exports/
+/results/
+/report/
+/work/
+.nextflow/
+.nextflow.log*
+*.pt
+*.ckpt
+*.onnx
+!dashboard/models/*.onnx
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# Rust
+rust/target/
+
+# Docs build
+site/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "brainssl: label-efficient learning on brain MRI and fMRI"
+authors:
+  - family-names: "Sabet Kish"
+    given-names: "Mahdi"
+repository-code: "https://github.com/mahdisabetkish/brainssl"
+url: "https://mahdisabetkish.github.io/brainssl/"
+license: MIT
+version: 1.0.0
+date-released: 2026-10-12
+keywords:
+  - MRI
+  - fMRI
+  - brain tumour segmentation
+  - functional connectivity
+  - self-supervised learning
