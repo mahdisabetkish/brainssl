@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install ruff==0.16.10
+      - run: ruff check src tests scripts bin
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install (CPU PyTorch)
+        run: |
+          pip install torch==2.7.1 --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt
+          pip install -e ".[dev]"
+      - run: pytest -q
+
+  end-to-end:
+    # Every stage of both tracks on a miniature synthetic dataset, on a CPU.
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install
+        run: |
+          pip install torch==2.7.1 --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt
+          pip install -e .
+      - name: Synthetic data
+        run: python bin/make_test_data.py --out ci/raw
+      - name: Prepare
+        run: |
+          brainssl prepare msd --raw ci/raw --out ci/processed --workers 2
+          brainssl prepare abide --raw ci/raw --out ci/processed
+      - name: Segmentation, pretrain then finetune then evaluate
+        run: |
+          COMMON="raw=ci/raw index=ci/processed/msd/index.csv splits=ci/processed/msd/splits.json lr_width=32 patch=[32,32] channels=[4,8,16] log_every=1 save_every=1 workers=0 batch=2 iterations=2"
+          brainssl smri pretrain --set out_dir=ci/smri/pretrain bilateral=true $COMMON
+          brainssl smri finetune --set out_dir=ci/smri/ft_ours_10pct budget=10pct init=ci/smri/pretrain/final.pt bilateral=true val_every=2 val_cases=2 $COMMON
+          brainssl smri finetune --set out_dir=ci/smri/ft_unet_scratch_10pct budget=10pct bilateral=false val_every=2 val_cases=2 $COMMON
+          for run in ft_ours_10pct ft_unet_scratch_10pct; do
+            brainssl smri evaluate --run ci/smri/$run --save-cases assets/test/showcase_cases.json
+          done
+      - name: Connectomes, the linear study and a deep baseline
+        run: |
+          F="--raw ci/raw --processed ci/processed"
+          brainssl fmri study --scheme kfold --atlases cc200 aal --repeats 1 --folds 2 $F --out ci/fmri_study
+          brainssl fmri study --scheme loso --atlases cc200 aal $F --out ci/fmri_study
+          brainssl fmri cv --method mlp_cc200 --model deep --arch mlp --atlases cc200 --epochs 2 --repeats 1 --folds 2 $F --out ci/fmri/mlp_cc200_kfold
+      - name: Report, export and dashboard data
+        run: |
+          C=assets/test/fmri_choices.json
+          F="--raw ci/raw --processed ci/processed"
+          brainssl report --smri-runs ci/smri --study ci/fmri_study --deep-runs ci/fmri --choices $C --out ci/report
+          brainssl export all --out ci/exports --smri-run ci/smri/ft_ours_10pct $F --choices $C --report ci/report/results.json --folds 2
+          brainssl dashboard --smri-runs ci/smri --study ci/fmri_study --deep-runs ci/fmri --choices $C \
+            --showcase-cases assets/test/showcase_cases.json --exports ci/exports $F --out ci/dashboard
+          test -s ci/dashboard/summary.json && test -s ci/dashboard/fmri.json && test -s ci/dashboard/cases/index.json

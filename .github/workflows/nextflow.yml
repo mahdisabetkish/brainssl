@@ -1,0 +1,40 @@
+name: Nextflow
+
+on:
+  push:
+    branches: [main]
+    paths: ["main.nf", "nextflow.config", "conf/**", "modules/**", "assets/**", "bin/**", "src/**"]
+  pull_request:
+    paths: ["main.nf", "nextflow.config", "conf/**", "modules/**", "assets/**", "bin/**", "src/**"]
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: nf-core/setup-nextflow@v2
+        with:
+          version: "25.04.0"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install the package for the local executor
+        run: |
+          pip install torch==2.7.1 --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt
+          pip install -e .
+          chmod +x bin/*.py
+      - name: Stub run (channel logic only)
+        run: nextflow run . -profile test -stub-run --outdir stub
+      - name: Test profile (every stage on synthetic data)
+        run: nextflow run . -profile test --outdir results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pipeline-info
+          path: results/pipeline_info/

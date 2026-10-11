@@ -1,0 +1,27 @@
+# docker compose run --rm brainssl info
+# docker compose --profile gpu run --rm brainssl-gpu smri finetune --set budget='"10pct"'
+# docker compose up dashboard      -> http://localhost:8080
+services:
+  brainssl:
+    image: mahdisabetkish/brainssl:cpu
+    build: { context: ., args: { TORCH_VARIANT: cpu } }
+    shm_size: 4gb
+    volumes: ["./data:/app/data", "./runs:/app/runs", "./report:/app/report", "./exports:/app/exports"]
+  brainssl-gpu:
+    profiles: ["gpu"]
+    image: mahdisabetkish/brainssl:gpu
+    build: { context: ., args: { TORCH_VARIANT: cu126 } }
+    shm_size: 4gb
+    volumes: ["./data:/app/data", "./runs:/app/runs", "./report:/app/report", "./exports:/app/exports"]
+    deploy:
+      resources:
+        reservations:
+          devices: [{ driver: nvidia, count: 1, capabilities: [gpu] }]
+  infer:
+    image: mahdisabetkish/brainssl-infer:latest
+    build: { context: ., dockerfile: rust/Dockerfile }
+    volumes: ["./scans:/scans"]
+  dashboard:
+    image: nginx:1.27-alpine
+    ports: ["8080:80"]
+    volumes: ["./dashboard:/usr/share/nginx/html:ro"]

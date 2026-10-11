@@ -1,0 +1,33 @@
+name: Hugging Face
+
+# Manual. Uploads the model folders written by `brainssl export all`, taken
+# from the assets of a GitHub release, since the weights are not kept in git.
+# Needs the repository secret HF_TOKEN (a token with write access).
+
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "release tag whose assets hold the exported models (exports-*.tar.gz)"
+        required: true
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install "huggingface_hub>=0.24"
+      - name: Download the exported models
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download "${{ inputs.release }}" --pattern "exports-*.tar.gz" --dir release
+          mkdir -p exports
+          for f in release/*.tar.gz; do tar -xzf "$f" -C exports; done
+      - name: Upload
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: python scripts/push_to_hub.py --exports exports --user "${{ vars.HF_USER || 'mahdisabetkish' }}"

@@ -1,0 +1,55 @@
+name: Rust
+
+on:
+  push:
+    branches: [main]
+    paths: ["rust/**", "src/brainssl/export/**", "src/brainssl/smri/**", "src/brainssl/fmri/**", "scripts/verify_rust_*.py"]
+  pull_request:
+    paths: ["rust/**", "src/brainssl/export/**", "src/brainssl/smri/**", "src/brainssl/fmri/**", "scripts/verify_rust_*.py"]
+
+jobs:
+  build-and-parity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+      - name: Unit tests
+        run: cargo test --release --manifest-path rust/Cargo.toml
+      - name: Clippy
+        run: cargo clippy --release --manifest-path rust/Cargo.toml -- -D warnings
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Python side
+        run: |
+          pip install torch==2.7.1 --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt
+          pip install -e .
+      - name: ONNX Runtime shared library (the version the Docker image ships)
+        run: |
+          curl -fsSL https://github.com/microsoft/onnxruntime/releases/download/v1.22.0/onnxruntime-linux-x64-1.22.0.tgz \
+            | tar -xz -C "$RUNNER_TEMP"
+          echo "ORT_LIB=$RUNNER_TEMP/onnxruntime-linux-x64-1.22.0/lib/libonnxruntime.so" >> "$GITHUB_ENV"
+      - name: Synthetic data, a small random-weight segmentation model and a fitted connectome model
+        run: |
+          python bin/make_test_data.py --out ci/raw
+          python scripts/export_test_model.py --out ci/model
+          brainssl prepare abide --raw ci/raw --out ci/processed
+          brainssl export connectome --out ci/connectome --raw ci/raw --processed ci/processed \
+            --choices assets/test/fmri_choices.json
+      - name: Segmentation parity with the Python pipeline
+        run: |
+          python scripts/verify_rust_parity.py --model ci/model --ort-lib "$ORT_LIB" \
+            --input ci/raw/Task01_BrainTumour/imagesTr/BRATS_001.nii.gz
+      - name: Connectome parity with the Python pipeline
+        run: |
+          for atlas in cc200 aal; do
+            python scripts/verify_rust_connectome.py --model ci/connectome --atlas $atlas --ort-lib "$ORT_LIB" \
+              --raw ci/raw --processed ci/processed
+          done
