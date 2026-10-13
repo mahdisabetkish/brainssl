@@ -19,6 +19,7 @@ const viewerOpts = {
   backColor: [0, 0, 0, 1], show3Dcrosshair: false, isColorbar: false, isOrientCube: false,
   crosshairColor: [0.42, 0.69, 1, 0.85], crosshairWidth: 1, multiplanarShowRender: 2,
   dragAndDropEnabled: false, scrollRequiresFocus: true, isResizeCanvas: true, loadingText: "",
+  clipPlaneColor: [0, 0, 0, 0],   // NiiVue tints the cut face magenta by default
 };
 
 function overlayFile(c, overlay) {
