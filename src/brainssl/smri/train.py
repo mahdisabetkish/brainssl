@@ -78,6 +78,7 @@ class FinetuneConfig(RunConfig):
     lr: float = 1e-2
     momentum: float = 0.99
     weight_decay: float = 3e-5
+    warmup: int = 0                    # linear lr warm-up steps before the poly decay
     foreground: float = 0.5
     val_every: int = 500
     val_cases: int = 20
@@ -253,7 +254,7 @@ def finetune(cfg: FinetuneConfig) -> dict:
             image = image.to(device, non_blocking=True).float()
             target = target.to(device, non_blocking=True)
             image, target = augment(image, target)
-            lr = cfg.lr * (1 - step / cfg.iterations) ** 0.9
+            lr = cfg.lr * (1 - step / cfg.iterations) ** 0.9 * min(1.0, (step + 1) / max(1, cfg.warmup))
             for g in opt.param_groups:
                 g["lr"] = lr
             with torch.autocast(device.type, dtype=torch.float16, enabled=cfg.amp):
