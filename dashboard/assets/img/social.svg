@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#12151c"/><stop offset="1" stop-color="#0a0c11"/>
+    </linearGradient>
+    <linearGradient id="mark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6ab0ff"/><stop offset="1" stop-color="#3987e5"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <g transform="translate(90,120) scale(5.2)">
+    <path d="M15 4.5c-5.6.4-10 4.5-10 11.2C5 22.4 9.4 27 15 27.5z" fill="none" stroke="url(#mark)" stroke-width="2"/>
+    <path d="M17 4.5c5.6.4 10 4.5 10 11.2 0 6.7-4.4 11.3-10 11.8z" fill="url(#mark)" opacity="0.9"/>
+    <path d="M16 3v26" stroke="#e8edf5" stroke-width="1.2" stroke-dasharray="2 2" opacity="0.5"/>
+  </g>
+  <text x="300" y="215" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="92" font-weight="600" fill="#f2f5fa">brainssl</text>
+  <text x="300" y="268" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="34" fill="#9aa6b8">Label-efficient learning on brain MRI and fMRI</text>
+  <g font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="30" fill="#d7deea">
+    <text x="90" y="400">Tumour segmentation with a bilateral U-Net</text>
+    <text x="90" y="452">Autism classification from connectomes trained on their own noise</text>
+    <text x="90" y="504">3D viewer, connectome explorer, models in the browser</text>
+  </g>
+  <g fill="#3987e5"><rect x="62" y="376" width="6" height="30" rx="3"/></g>
+  <g fill="#199e70"><rect x="62" y="428" width="6" height="30" rx="3"/></g>
+  <g fill="#d95926"><rect x="62" y="480" width="6" height="30" rx="3"/></g>
+  <text x="90" y="580" font-family="Consolas, 'Courier New', monospace" font-size="26" fill="#6f7b8f">mahdisabetkish.github.io/brainssl</text>
+</svg>
