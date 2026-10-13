@@ -3,7 +3,7 @@ import numpy as np
 from brainssl.fmri.connectivity import shrunk_correlation, spd_log, sym_to_vec
 from brainssl.fmri.evaluate import Fold
 from brainssl.fmri.methods import ConnectomeData
-from brainssl.fmri.study import refit_intercept, run_atlas_fold
+from brainssl.fmri.study import refit_intercept, run_atlas_fold, run_study
 from brainssl.fmri.windows import window_starts
 
 
@@ -42,8 +42,24 @@ def test_study_fold_produces_probabilities_for_every_model(rng):
     data = _toy_data(rng)
     idx = rng.permutation(data.n)
     fold = Fold(0, 0, np.sort(idx[:45]), np.sort(idx[45:]))
-    out = run_atlas_fold(data, "toy", fold, {"tangent", "log", "corr", "vicinal"}, (1e-2, 1e-1))
+    grids = {m: (1e-2, 1e-1) for m in ("tangent", "log", "corr", "vicinal")}
+    out = run_atlas_fold(data, "toy", fold, grids)
     assert set(out) == {"tangent", "log", "corr", "vicinal"}
     for by_c in out.values():
         for p in by_c.values():
             assert p.shape == (15,) and np.all((p >= 0) & (p <= 1))
+
+
+def test_study_completes_a_split_with_new_values_of_c(rng, tmp_path):
+    data = _toy_data(rng)
+    idx = rng.permutation(data.n)
+    folds = [Fold(0, 0, np.sort(idx[:45]), np.sort(idx[45:])), Fold(0, 1, np.sort(idx[15:]), np.sort(idx[:15]))]
+    run_study(data, ("toy",), folds, tmp_path, "kfold", {"log": (1e-1,), "vicinal": (1e-1,)})
+    first = np.load(tmp_path / "kfold" / "log" / "toy" / "C0.1.npy")
+    # a wider grid later: only the new pair is fitted, the old one is kept as saved
+    run_study(data, ("toy",), folds, tmp_path, "kfold", {"log": (1e-2, 1e-1), "vicinal": (1e-1,)})
+    assert np.array_equal(np.load(tmp_path / "kfold" / "log" / "toy" / "C0.1.npy"), first, equal_nan=True)
+    saved = np.load(tmp_path / "kfold" / "partial" / "toy" / f"{folds[0].tag}.npz")
+    assert set(saved.files) == {"log|0.1", "log|0.01", "vicinal|0.1"}
+    tested = np.concatenate([f.test for f in folds])
+    assert np.isfinite(np.load(tmp_path / "kfold" / "log" / "toy" / "C0.01.npy")[0, tested]).all()

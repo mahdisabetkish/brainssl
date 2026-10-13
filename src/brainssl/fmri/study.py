@@ -11,10 +11,15 @@ models and regularisation strengths:
                on the training full scans (see docs/methods/fmri.md)
 
 Features are standardised with statistics of the training subjects of the
-split. Baselines are fitted at every C of the grid and the report credits each
-with its best C on these very splits, which favours the baselines; the noise-aware
-model is fitted at the grid too, and its headline result uses the C fixed in
-advance from development runs on other random splits.
+split. Baselines are fitted at five values of C spanning two orders of
+magnitude, and the report credits each with its best C on these very splits,
+which favours the baselines; the noise-aware model is fitted at the two values
+of its development grid, and its headline result uses the one fixed in advance
+from development runs on other random splits (assets/fmri_choices.json).
+
+Each split is saved as soon as it is done, and a split file that lacks some
+(model, C) pair is completed rather than recomputed, so the grids can be
+extended after the fact at the cost of the missing fits only.
 
 Out-of-fold probabilities are written to
 ``<out>/<scheme>/<model>/<atlas>/C<C>.npy`` as (repeats, subjects) arrays, so the
@@ -44,7 +49,12 @@ from .methods import ConnectomeData, _dual_logreg
 
 log = logging.getLogger(__name__)
 
-C_GRID = (1e-4, 3e-4, 1e-3)
+BASELINE_GRID = (3e-5, 1e-4, 3e-4, 1e-3, 3e-3)
+VICINAL_GRID = (1e-4, 3e-4)          # the development grid of scripts/choose_fmri_c.py
+
+
+def default_grids(models: set[str] | list[str]) -> dict[str, tuple[float, ...]]:
+    return {m: VICINAL_GRID if m == "vicinal" else BASELINE_GRID for m in models}
 
 
 def _sigmoid(v: np.ndarray) -> np.ndarray:
@@ -86,10 +96,12 @@ def _fit_predict_plain(gram: torch.Tensor, tr: np.ndarray, te: np.ndarray, y: np
     return _sigmoid((gram[te][:, tr] @ a).numpy() + float(b))
 
 
-def run_atlas_fold(data: ConnectomeData, atlas: str, fold: Fold, models: set[str],
-                   c_grid: tuple[float, ...]) -> dict[str, dict[float, np.ndarray]]:
+def run_atlas_fold(data: ConnectomeData, atlas: str, fold: Fold,
+                   grids: dict[str, tuple[float, ...]]) -> dict[str, dict[float, np.ndarray]]:
+    """Held-out probabilities of every model in ``grids`` at each of its values of C."""
     y = data.labels.astype(np.float64)
     tr, te = fold.train, fold.test
+    models = {m for m, cs in grids.items() if cs}
     out: dict[str, dict[float, np.ndarray]] = {}
 
     def standardise(x: np.ndarray) -> np.ndarray:
@@ -99,10 +111,10 @@ def run_atlas_fold(data: ConnectomeData, atlas: str, fold: Fold, models: set[str
     if "tangent" in models:
         ts = TangentSpace("frechet").fit(data.corr[atlas][tr], logs=data.logs[atlas][tr])
         gram = _gram(standardise(ts.transform(data.corr[atlas])))
-        out["tangent"] = {C: _fit_predict_plain(gram, tr, te, y, C) for C in c_grid}
+        out["tangent"] = {C: _fit_predict_plain(gram, tr, te, y, C) for C in grids["tangent"]}
     if "corr" in models:
         gram = _gram(standardise(fisher_z(data.corr[atlas])))
-        out["corr"] = {C: _fit_predict_plain(gram, tr, te, y, C) for C in c_grid}
+        out["corr"] = {C: _fit_predict_plain(gram, tr, te, y, C) for C in grids["corr"]}
     if "log" in models or "vicinal" in models:
         full = sym_to_vec(data.logs[atlas])
         mu, sd = full[tr].mean(0), full[tr].std(0) + 1e-8
@@ -111,7 +123,7 @@ def run_atlas_fold(data: ConnectomeData, atlas: str, fold: Fold, models: set[str
         k = 0 if windows is None else windows.shape[1]
         gram = _gram(_standardised_rows(full, windows, mu, sd))
         if "log" in models:
-            out["log"] = {C: _fit_predict_plain(gram, tr, te, y, C) for C in c_grid}
+            out["log"] = {C: _fit_predict_plain(gram, tr, te, y, C) for C in grids["log"]}
         if "vicinal" in models:
             win = lambda idx: (n + idx[:, None] * k + np.arange(k)[None]).ravel()  # noqa: E731
             rows = np.concatenate([tr, win(tr)])
@@ -119,7 +131,7 @@ def run_atlas_fold(data: ConnectomeData, atlas: str, fold: Fold, models: set[str
             weights = torch.from_numpy(np.concatenate([np.ones(len(tr)), np.full(len(tr) * k, 1.0 / k)]))
             sub = gram[rows][:, rows]
             out["vicinal"] = {}
-            for C in c_grid:
+            for C in grids["vicinal"]:
                 a, _ = _dual_logreg(sub, labels, weights, C)
 
                 def score(idx, a=a):
@@ -131,40 +143,42 @@ def run_atlas_fold(data: ConnectomeData, atlas: str, fold: Fold, models: set[str
 
 
 def run_study(data: ConnectomeData, atlases: tuple[str, ...], folds: list[Fold], out: Path, scheme: str,
-              models: set[str], c_grid: tuple[float, ...] = C_GRID) -> None:
+              grids: dict[str, tuple[float, ...]]) -> None:
     repeats = 1 + max(f.repeat for f in folds)
     root = out / scheme
     for atlas in atlases:
-        done_file = root / f".done_{atlas}"
-        if done_file.exists():
-            log.info("%s %s already finished", scheme, atlas)
-            continue
         partial = root / "partial" / atlas
         partial.mkdir(parents=True, exist_ok=True)
-        t0 = time.time()
+        t0, computed = time.time(), 0
         for i, fold in enumerate(folds):
             path = partial / f"{fold.tag}.npz"
-            if path.exists():
+            saved = dict(np.load(path)) if path.exists() else {}
+            missing = {m: tuple(C for C in cs if f"{m}|{C}" not in saved) for m, cs in grids.items()}
+            missing = {m: cs for m, cs in missing.items() if cs}
+            if not missing:
                 continue
-            res = run_atlas_fold(data, atlas, fold, models, c_grid)
+            res = run_atlas_fold(data, atlas, fold, missing)
+            saved.update({f"{m}|{C}": p for m, by_c in res.items() for C, p in by_c.items()})
             # written under a temporary name first, so an interrupted run never leaves a truncated split
             tmp = path.with_suffix(".tmp.npz")
-            np.savez(tmp, **{f"{m}|{C}": p for m, by_c in res.items() for C, p in by_c.items()})
+            np.savez(tmp, **saved)
             os.replace(tmp, path)
-            if (i + 1) % 10 == 0 or i == len(folds) - 1:
+            computed += 1
+            if computed % 10 == 0 or i == len(folds) - 1:
                 log.info("%s %s: %d/%d splits (%.0fs)", scheme, atlas, i + 1, len(folds), time.time() - t0)
-        # assemble out-of-fold arrays
+        # out-of-fold arrays of the requested grid, one (repeats, subjects) array per model and C
+        wanted = {f"{m}|{C}" for m, cs in grids.items() for C in cs}
         arrays: dict[str, np.ndarray] = {}
         for fold in folds:
             saved = np.load(partial / f"{fold.tag}.npz")
-            for key in saved.files:
+            for key in wanted & set(saved.files):
                 arrays.setdefault(key, np.full((repeats, data.n), np.nan))[fold.repeat, fold.test] = saved[key]
         for key, arr in arrays.items():
             model, C = key.split("|")
             target = root / model / atlas
             target.mkdir(parents=True, exist_ok=True)
             np.save(target / f"C{float(C):g}.npy", arr)
-        done_file.write_text("ok")
+        log.info("%s %s finished (%d splits computed now)", scheme, atlas, computed)
     write_json(root / "folds.json", [{"repeat": f.repeat, "index": f.index, "test": f.test.tolist()} for f in folds])
     np.save(root / "labels.npy", data.labels)
     np.save(root / "sites.npy", data.sites.astype(str))
@@ -178,7 +192,10 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--repeats", type=int, default=5)
     p.add_argument("--folds", type=int, default=10)
     p.add_argument("--seed", type=int, default=10)
-    p.add_argument("--c", type=float, nargs="+", default=list(C_GRID))
+    p.add_argument("--baseline-c", type=float, nargs="+", default=list(BASELINE_GRID),
+                   help="values of C for the tangent, log-Euclidean and correlation baselines")
+    p.add_argument("--vicinal-c", type=float, nargs="+", default=list(VICINAL_GRID),
+                   help="values of C for the noise-aware model")
     p.add_argument("--raw", type=Path, default=Path("data/raw"))
     p.add_argument("--processed", type=Path, default=Path("data/processed"))
     p.add_argument("--out", type=Path, default=Path("runs/fmri_study"))
@@ -191,6 +208,7 @@ def main(argv: list[str] | None = None) -> None:
         data = ConnectomeData.load(args.raw, args.processed, (atlas,), windows="vicinal" in args.models)
         folds = (kfold_splits(data.labels, data.sites, args.folds, args.repeats, args.seed) if args.scheme == "kfold"
                  else site_splits(data.sites))
-        run_study(data, (atlas,), folds, args.out, args.scheme, set(args.models), tuple(args.c))
+        grids = {m: tuple(args.vicinal_c if m == "vicinal" else args.baseline_c) for m in args.models}
+        run_study(data, (atlas,), folds, args.out, args.scheme, grids)
         del data
     log.info("study %s finished: %s", args.scheme, json.dumps(args.atlases))

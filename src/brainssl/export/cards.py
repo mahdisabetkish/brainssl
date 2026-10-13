@@ -93,13 +93,19 @@ This is a research model and not a medical device.
 
 
 def connectome_card(results: dict) -> str:
-    rows = {(r["model"], r["atlas"]): r for r in results.get("fmri_study", {}).get("kfold", {}).get("rows", [])}
-    ours = rows.get(("vicinal", "ensemble"), {})
-    tang = rows.get(("tangent", "ensemble"), {})
+    study = results.get("fmri_study", {})
+    rows = {(r["model"], r["atlas"]): r for r in study.get("kfold", {}).get("rows", [])}
+    loso = {r["model"]: r for r in study.get("loso", {}).get("rows", []) if r["atlas"] == "ensemble"}
+    names = {"vicinal": "this model", "tangent": "tangent space + logistic regression",
+             "log": "log-Euclidean + logistic regression", "corr": "Fisher-z correlations + logistic regression"}
 
-    def m(r, k):
+    def m(r: dict, k: str) -> str:
         return _fmt(r.get(k, {}).get("mean")) if r else "n/a"
 
+    table = "\n".join(
+        f"| {names[k]} | {m(rows.get((k, 'ensemble'), {}), 'auc')} | {m(rows.get((k, 'ensemble'), {}), 'accuracy')} | "
+        f"{m(rows.get((k, 'ensemble'), {}), 'balanced_accuracy')} | {m(loso.get(k, {}), 'auc')} |"
+        for k in names)
     return f"""---
 license: cc-by-nc-sa-4.0
 library_name: brainssl
@@ -119,8 +125,9 @@ pipeline_tag: tabular-classification
 Linear classifiers in the log-Euclidean embedding of resting-state functional
 connectivity, one per atlas, trained on each scan's own estimation noise: the
 connectome is re-estimated on six windows of the scan and the classifier is fit
-to the full scan and its windows together. Predictions average over the full
-scan, its windows and the five atlases.
+to the full scan and its windows together. A prediction averages the
+probabilities of the full scan and of its windows, with the intercept refitted
+for that rule on the training subjects, and then averages over the five atlases.
 
 Code and the full evaluation: <https://github.com/mahdisabetkish/brainssl>.
 
@@ -129,17 +136,19 @@ Code and the full evaluation: <https://github.com/mahdisabetkish/brainssl>.
 `connectome.json` describes the feature pipeline and, for each atlas, the
 intercept, ROI labels and centroids; `weights_<atlas>.bin` holds the feature
 means, standard deviations and weights as little-endian float32, in that order.
+The weights are fitted on all 871 subjects with the regularisation fixed in
+advance for each atlas.
 
 ## Evaluation
 
 ABIDE I preprocessed (C-PAC, band-pass filtered, no global signal regression),
-871 subjects after quality control, 5 repeats of 10-fold cross-validation
-stratified by site and diagnosis:
+871 subjects after quality control. Five-atlas ensembles; 5 repeats of 10-fold
+cross-validation stratified by site and diagnosis, and leave one site out. The
+baselines are credited with the regularisation that does best on these splits.
 
-| Model | AUC | Accuracy | Balanced accuracy |
-|---|---|---|---|
-| this model (five-atlas ensemble) | {m(ours, "auc")} | {m(ours, "accuracy")} | {m(ours, "balanced_accuracy")} |
-| tangent space + logistic regression (five-atlas ensemble) | {m(tang, "auc")} | {m(tang, "accuracy")} | {m(tang, "balanced_accuracy")} |
+| Model | AUC | Accuracy | Balanced accuracy | AUC, leave one site out |
+|---|---|---|---|---|
+{table}
 
 ## Intended use and limitations
 

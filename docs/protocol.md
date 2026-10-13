@@ -49,9 +49,10 @@ was looked at. The window count (6) and window length (70% of the scan) were set
 before any experiment and never changed.
 
 **Baselines are given the benefit of the doubt.** Every baseline is fitted at
-every C of the grid on the reported splits and is credited with the C that does
-best on those very splits. The proposed model is credited only with its
-pre-registered C. Any selection effect therefore favours the baselines.
+five values of C, from 3e-5 to 3e-3, on the reported splits and is credited
+with the C that does best on those very splits, per atlas. The proposed model
+is credited only with its pre-registered C. Any selection effect therefore
+favours the baselines.
 
 **Everything is fitted inside the fold.** Standardisation statistics, the
 Frechet mean of the tangent space and every classifier are estimated from the
