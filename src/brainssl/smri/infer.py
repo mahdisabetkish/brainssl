@@ -38,12 +38,15 @@ def _gaussian(shape: tuple[int, ...], sigma_scale: float = 0.125) -> torch.Tenso
 
 @torch.no_grad()
 def sliding_window(model: nn.Module, image: torch.Tensor, window: tuple[int, int, int] = (160, 128, 128),
-                   overlap: float = 0.5, batch: int = 2, mirror: bool = True) -> torch.Tensor:
+                   overlap: float = 0.5, batch: int = 2, mirror: bool = True,
+                   first_view: bool = False) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
     """Region probabilities (K, X, Y, Z) for one image (C, X, Y, Z) on the model's device.
 
     With ``mirror`` the prediction is averaged with the prediction on the
     left-right flipped input, flipped back. Inputs smaller than the window are
-    zero-padded.
+    zero-padded. With ``first_view`` the probabilities of the unflipped pass
+    alone are returned as well, so that the disagreement between the two views
+    (an uncertainty signal) can be computed.
     """
     device = next(model.parameters()).device
     c, *size = image.shape
@@ -52,7 +55,7 @@ def sliding_window(model: nn.Module, image: torch.Tensor, window: tuple[int, int
         image = torch.nn.functional.pad(image, (0, pad[2], 0, pad[1], 0, pad[0]))
     _, X, Y, Z = image.shape
     weight = _gaussian(window).to(device)
-    out = None
+    out = out1 = None
     norm = torch.zeros((X, Y, Z), device=device)
     boxes = list(itertools.product(_starts(X, window[0], overlap), _starts(Y, window[1], overlap),
                                    _starts(Z, window[2], overlap)))
@@ -61,22 +64,29 @@ def sliding_window(model: nn.Module, image: torch.Tensor, window: tuple[int, int
         chunk = boxes[k:k + batch]
         tiles = torch.stack([image[:, x:x + window[0], y:y + window[1], z:z + window[2]]
                              for x, y, z in chunk]).to(device, non_blocking=True)
-        probs = 0
+        probs, plain = 0, None
         for flip in flips:
             inp = tiles.flip(2) if flip else tiles
             logits = model(inp)
             if isinstance(logits, (list, tuple)):
                 logits = logits[0]
             p = torch.sigmoid(logits.float())
+            plain = p if plain is None else plain
             probs = probs + (p.flip(2) if flip else p)
         probs = probs / len(flips)
         if out is None:
             out = torch.zeros((probs.shape[1], X, Y, Z), device=device)
-        for (x, y, z), p in zip(chunk, probs):
+            out1 = torch.zeros_like(out) if first_view else None
+        for k, ((x, y, z), p) in enumerate(zip(chunk, probs)):
             out[:, x:x + window[0], y:y + window[1], z:z + window[2]] += p * weight
+            if out1 is not None:
+                out1[:, x:x + window[0], y:y + window[1], z:z + window[2]] += plain[k] * weight
             norm[x:x + window[0], y:y + window[1], z:z + window[2]] += weight
     out = out / norm.clamp_min(1e-6)
-    return out[:, :size[0], :size[1], :size[2]]
+    out = out[:, :size[0], :size[1], :size[2]]
+    if first_view:
+        return out, (out1 / norm.clamp_min(1e-6))[:, :size[0], :size[1], :size[2]]
+    return out
 
 
 def enforce_hierarchy(prob: torch.Tensor | np.ndarray, threshold: float = 0.5) -> np.ndarray:
