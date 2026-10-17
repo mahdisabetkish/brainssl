@@ -26,7 +26,7 @@ jobs:
         run: cargo clippy --release --manifest-path rust/Cargo.toml -- -D warnings
       - name: Build the binary
         run: cargo build --release --manifest-path rust/Cargo.toml
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
           cache: pip
