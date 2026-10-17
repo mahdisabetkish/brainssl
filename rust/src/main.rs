@@ -9,6 +9,7 @@ mod preprocess;
 mod sliding;
 mod volume;
 
+use std::io::Write;
 use std::path::PathBuf;
 use std::time::Instant;
 
@@ -91,6 +92,14 @@ fn session(path: &std::path::Path, threads: usize) -> Result<Session> {
 }
 
 fn main() -> Result<()> {
+    run()?;
+    // The ONNX Runtime library is loaded at run time. Leaving through exit skips its teardown, which
+    // ends in a crash on some Linux builds after all the work and output are done.
+    std::io::stdout().flush()?;
+    std::process::exit(0)
+}
+
+fn run() -> Result<()> {
     let cli = Cli::parse();
     init_runtime(&cli)?;
     match &cli.command {

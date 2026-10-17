@@ -70,7 +70,7 @@ def main() -> None:
                               "--timeseries", str(path), "--atlas", args.atlas], capture_output=True, text=True)
         path.unlink()
         if run.returncode != 0:
-            sys.exit(run.stderr)
+            sys.exit(f"rust binary failed with exit code {run.returncode}:\n{run.stderr}")
         p_rust = json.loads(run.stdout)["probability"]
         p_py = python_probability(ts, args.model, args.atlas)
         worst = max(worst, abs(p_rust - p_py))

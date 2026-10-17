@@ -99,7 +99,7 @@ def main() -> None:
                               "--probabilities", str(out_prob)], capture_output=True, text=True)
         t_rs = time.time() - t
         if run.returncode != 0:
-            sys.exit(f"rust binary failed:\n{run.stderr}")
+            sys.exit(f"rust binary failed with exit code {run.returncode}:\n{run.stdout}\n{run.stderr}")
         midline_rs = float(run.stderr.split("midline at x = ")[1].split(",")[0])
         labels_rs = np.asarray(nib.load(out_labels).dataobj)
         prob_rs = np.moveaxis(np.asarray(nib.load(out_prob).dataobj, dtype=np.float32), -1, 0)
