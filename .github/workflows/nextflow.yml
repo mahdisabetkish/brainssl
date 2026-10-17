@@ -3,9 +3,11 @@ name: Nextflow
 on:
   push:
     branches: [main]
-    paths: ["main.nf", "nextflow.config", "conf/**", "modules/**", "assets/**", "bin/**", "src/**"]
+    paths: ["main.nf", "nextflow.config", "conf/**", "modules/**", "assets/**", "bin/**", "src/**",
+            ".github/workflows/nextflow.yml"]
   pull_request:
     paths: ["main.nf", "nextflow.config", "conf/**", "modules/**", "assets/**", "bin/**", "src/**"]
+  workflow_dispatch:
 
 jobs:
   pipeline:

@@ -3,9 +3,11 @@ name: Rust
 on:
   push:
     branches: [main]
-    paths: ["rust/**", "src/brainssl/export/**", "src/brainssl/smri/**", "src/brainssl/fmri/**", "scripts/verify_rust_*.py"]
+    paths: ["rust/**", "src/brainssl/export/**", "src/brainssl/smri/**", "src/brainssl/fmri/**", "scripts/verify_rust_*.py",
+            ".github/workflows/rust.yml"]
   pull_request:
     paths: ["rust/**", "src/brainssl/export/**", "src/brainssl/smri/**", "src/brainssl/fmri/**", "scripts/verify_rust_*.py"]
+  workflow_dispatch:
 
 jobs:
   build-and-parity:
@@ -22,6 +24,8 @@ jobs:
         run: cargo test --release --manifest-path rust/Cargo.toml
       - name: Clippy
         run: cargo clippy --release --manifest-path rust/Cargo.toml -- -D warnings
+      - name: Build the binary
+        run: cargo build --release --manifest-path rust/Cargo.toml
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
