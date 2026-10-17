@@ -16,7 +16,7 @@ process SMRI_FINETUNE {
     brainssl smri finetune --set out_dir='"${row.tag}"' raw='"${raw}"' \
         index='"${processed}/msd/index.csv"' splits='"${processed}/msd/splits.json"' \
         bilateral=${row.bilateral} budget='"${row.budget}"' iterations=${row.iterations} \
-        seed=${row.seed} workers=${params.smri_workers} ${init} ${params.smri_extra_args}
+        seed=${row.seed} workers=${params.smri_workers} ${init} ${params.smri_extra_args} ${params.smri_finetune_args}
     """
 
     stub:
