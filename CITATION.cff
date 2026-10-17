@@ -8,7 +8,7 @@ repository-code: "https://github.com/mahdisabetkish/brainssl"
 url: "https://mahdisabetkish.github.io/brainssl/"
 license: MIT
 version: 1.0.0
-date-released: 2026-10-12
+date-released: 2026-10-17
 keywords:
   - MRI
   - fMRI
