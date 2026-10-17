@@ -14,7 +14,7 @@ onnx==1.23.1
 onnxruntime==1.30.0
 huggingface_hub==1.19.0
 matplotlib==3.10.9
-requests==2.33.1
+requests==2.34.2
 packaging==26.2
 filelock==3.25.2
 fsspec==2026.2.0
