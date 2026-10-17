@@ -323,6 +323,9 @@ def summarise_run(raw: dict) -> dict:
                            "risk_coverage": risk_coverage(err, -u, grid=10)}
         unc[name] = entry
     out["uncertainty"] = unc
+    out["points"] = {name: [{"id": case, "u": round(float(df.loc[case, f"unc_entropy_{name}"]), 5),
+                             "dice": round(float(df.loc[case, f"dice_{name}"]), 4)} for case in df.index]
+                     for name in REGIONS}
     # volumes
     out["volume"] = {name: agreement(df[f"vol_pred_{name}"].to_numpy(float)[df[f"vol_true_{name}"] > 0] / 1000,
                                       df[f"vol_true_{name}"].to_numpy(float)[df[f"vol_true_{name}"] > 0] / 1000)

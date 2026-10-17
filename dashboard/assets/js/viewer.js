@@ -23,7 +23,8 @@ const viewerOpts = {
 };
 
 function overlayFile(c, overlay) {
-  return { ours: c.files.ours, baseline: c.files.baseline, truth: c.files.truth, errors: c.files.errors }[overlay];
+  return { ours: c.files.ours, baseline: c.files.baseline, truth: c.files.truth, errors: c.files.errors,
+           uncertainty: c.files.uncertainty, saliency: c.files.saliency }[overlay];
 }
 
 // ---------------------------------------------------------------- hero
@@ -69,10 +70,12 @@ async function loadCase(c) {
   document.getElementById("viewer-badge").textContent = `${c.id} · loading`;
   const list = [{ url: c.files[state.contrast], colormap: "gray" }];
   const ov = overlayFile(c, state.overlay);
-  if (ov) list.push({ url: ov, colormap: "gray", opacity: state.opacity });
+  const continuous = state.overlay === "uncertainty" || state.overlay === "saliency";
+  if (ov) list.push(continuous ? { url: ov, colormap: "inferno", opacity: state.opacity, cal_min: 8, cal_max: 200 }
+                               : { url: ov, colormap: "gray", opacity: state.opacity });
   if (state.asymmetry && c.files.asymmetry) list.push({ url: c.files.asymmetry, colormap: "warm", opacity: 0.55, cal_min: 40, cal_max: 200 });
   await nv.loadVolumes(list);
-  if (ov) nv.volumes[1].setColormapLabel(state.overlay === "errors" ? ERRORS : LABELS);
+  if (ov && !continuous) nv.volumes[1].setColormapLabel(state.overlay === "errors" ? ERRORS : LABELS);
   nv.updateGLVolume();
   nv.setSliceType(state.mode);
   document.getElementById("viewer-badge").textContent = `${c.id} · ${state.contrast}`;
@@ -85,6 +88,9 @@ function renderLegend() {
   if (state.overlay === "errors") {
     el.innerHTML = `<span><i class="swatch" style="background:#d55181"></i>missed tumour (false negative)</span>
       <span><i class="swatch" style="background:#22d3ee"></i>false alarm (false positive)</span>`;
+  } else if (state.overlay === "uncertainty" || state.overlay === "saliency") {
+    const what = state.overlay === "uncertainty" ? "entropy of the whole-tumour probability, 0 to 0.69 nats" : "gradient × input of the whole-tumour logit";
+    el.innerHTML = `<span><i class="swatch" style="background:linear-gradient(90deg,#1b0c41,#cf4446,#fcffa4)"></i>${what}, low to high</span>`;
   } else if (state.overlay === "none") {
     el.innerHTML = "";
   } else {
@@ -119,6 +125,9 @@ export async function initViewer() {
     list.innerHTML = `<div class="pending">Test scans are added once the final models are trained.</div>`;
     document.getElementById("viewer-badge").textContent = "no scans yet";
     return;
+  }
+  if (!index.cases.some((c) => c.files.uncertainty)) {
+    document.querySelectorAll("#overlay option[data-trust]").forEach((o) => o.remove());
   }
   list.innerHTML = index.cases.map((c) => `<button type="button" class="case-btn" data-id="${c.id}" aria-pressed="false">
       <div class="id">${c.id}</div><div class="meta"><span>WT ${fmt(c.dice.ours.WT, 2)} vs ${fmt(c.dice.baseline.WT, 2)}</span><span>${c.tag ?? ""}</span></div></button>`).join("");

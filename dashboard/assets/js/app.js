@@ -3,7 +3,8 @@
 import { css, d3, dotCI, dumbbell, fmt, lineCI, pairedScatter, registerTable, reliability, renderTable, strip,
          wireTableToggles } from "./charts.js";
 
-const views = ["overview", "viewer", "efficiency", "connectome", "classifiers", "demo", "method", "reproduce"];
+const views = ["overview", "viewer", "efficiency", "connectome", "classifiers", "trust-smri", "trust-fmri", "demo", "method",
+                "reproduce"];
 const cache = new Map();
 
 export async function getJSON(path) {
@@ -273,6 +274,8 @@ const inits = {
   efficiency: initEfficiency,
   connectome: () => import("./connectome.js").then((m) => m.initConnectome()),
   classifiers: initClassifiers,
+  "trust-smri": () => import("./trust.js").then((m) => m.initTrustSmri()),
+  "trust-fmri": () => import("./trust.js").then((m) => m.initTrustFmri()),
   demo: () => import("./demo.js").then((m) => m.initDemo()),
   method: () => import("./explainers.js").then((m) => m.initExplainers()),
   reproduce: initReproduce,
@@ -281,6 +284,8 @@ const rerender = {
   overview: () => summary && renderOverview(),
   efficiency: () => smri && renderEfficiency(),
   classifiers: () => fmri && renderClassifiers(),
+  "trust-smri": () => import("./trust.js").then((m) => m.redrawTrustSmri()),
+  "trust-fmri": () => import("./trust.js").then((m) => m.redrawTrustFmri()),
   method: () => import("./explainers.js").then((m) => m.initExplainers()),
 };
 

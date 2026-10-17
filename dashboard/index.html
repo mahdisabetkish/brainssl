@@ -35,6 +35,7 @@
     <symbol id="i-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="m10 8.8 5 3.2-5 3.2z"/></symbol>
     <symbol id="i-flask" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3.5h5M10.5 3.5v5.2L5.4 17.5A2 2 0 0 0 7.1 20.5h9.8a2 2 0 0 0 1.7-3L13.5 8.7V3.5"/><path d="M7.6 14h8.8"/></symbol>
     <symbol id="i-cog" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2 5 6v5.6c0 4.3 2.8 7.7 7 9.2 4.2-1.5 7-4.9 7-9.2V6z"/><path d="m8.8 12 2.4 2.4 4.2-4.6"/></symbol>
     <symbol id="i-github" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5a9.5 9.5 0 0 0-3 18.5c.5.1.6-.2.6-.5v-1.7c-2.6.6-3.2-1.1-3.2-1.1-.4-1.1-1-1.4-1-1.4-.9-.6 0-.6 0-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.3-2.1-.2-4.3-1-4.3-4.6 0-1 .4-1.9 1-2.5-.1-.3-.4-1.2.1-2.5 0 0 .8-.3 2.6 1a9 9 0 0 1 4.8 0c1.8-1.3 2.6-1 2.6-1 .5 1.3.2 2.2.1 2.5.6.6 1 1.5 1 2.5 0 3.6-2.2 4.4-4.3 4.6.3.3.6.8.6 1.6v2.4c0 .3.2.6.7.5A9.5 9.5 0 0 0 12 2.5Z"/></symbol>
     <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 5.5A2 2 0 0 1 6.5 3.5h12v14h-12a2 2 0 0 0-2 2z"/><path d="M4.5 19.5a2 2 0 0 0 2 2h12v-4"/></symbol>
     <symbol id="i-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 7v10l8 4 8-4V7z"/><path d="m4 7 8 4 8-4M12 11v10"/></symbol>
@@ -63,6 +64,9 @@
       <div class="nav-label">Resting-state fMRI</div>
       <a href="#connectome" data-view="connectome"><svg><use href="#i-graph"/></svg>Connectome</a>
       <a href="#classifiers" data-view="classifiers"><svg><use href="#i-bars"/></svg>Classifiers</a>
+      <div class="nav-label">Trust</div>
+      <a href="#trust-smri" data-view="trust-smri"><svg><use href="#i-shield"/></svg>Audit: segmentation</a>
+      <a href="#trust-fmri" data-view="trust-fmri"><svg><use href="#i-shield"/></svg>Audit: connectome</a>
       <div class="nav-label">Hands on</div>
       <a href="#demo" data-view="demo"><svg><use href="#i-play"/></svg>Run the models</a>
       <a href="#method" data-view="method"><svg><use href="#i-flask"/></svg>How it works</a>
@@ -85,6 +89,8 @@
     <a href="#efficiency" data-view="efficiency">Label efficiency</a>
     <a href="#connectome" data-view="connectome">Connectome</a>
     <a href="#classifiers" data-view="classifiers">Classifiers</a>
+    <a href="#trust-smri" data-view="trust-smri">Audit: segmentation</a>
+    <a href="#trust-fmri" data-view="trust-fmri">Audit: connectome</a>
     <a href="#demo" data-view="demo">Run the models</a>
     <a href="#method" data-view="method">How it works</a>
     <a href="#reproduce" data-view="reproduce">Reproduce</a>
@@ -162,6 +168,8 @@
               <option value="baseline">U-Net from scratch</option>
               <option value="truth">Reference annotation</option>
               <option value="errors">Errors of ours vs reference</option>
+              <option value="uncertainty" data-trust>Uncertainty of ours (entropy)</option>
+              <option value="saliency" data-trust>Where the gradient points (ours)</option>
               <option value="none">None</option>
             </select>
           </label>
@@ -283,6 +291,98 @@
           <div id="site-chart" class="chart"></div></div>
         <div class="card"><div class="card-head"><div><h3>Calibration</h3><p>predicted probability against observed frequency, all five atlases</p></div></div>
           <div id="calib-chart" class="chart"></div></div>
+      </div>
+    </section>
+
+    <!-- ============================================================ trust: segmentation -->
+    <section class="view" id="view-trust-smri" aria-labelledby="h-ts">
+      <div class="view-head">
+        <div><span class="eyebrow">Trust · tumour segmentation · 96 held-out scans</span><h1 id="h-ts">Audit: segmentation</h1>
+          <p class="lede">Before relying on a prediction: does the network know when it is wrong, do its probabilities
+            mean what they say, can its volumes be followed over time, where does it fail, and what happens when the
+            images get worse. Each line of the scorecard has a written rule; the evidence is below it.</p></div>
+        <div class="toolbar">
+          <select id="t-budget" aria-label="Label budget"></select>
+          <div class="segmented" id="t-region" role="group" aria-label="Region">
+            <button type="button" data-v="WT" aria-pressed="true">Whole tumour</button>
+            <button type="button" data-v="TC" aria-pressed="false">Core</button>
+            <button type="button" data-v="ET" aria-pressed="false">Enhancing</button>
+          </div>
+        </div>
+      </div>
+      <div class="scorecard" id="t-score-s"><div class="pending">loading</div></div>
+      <div class="grid g-2">
+        <div class="card"><div class="card-head"><div><h3>Does it know when it is wrong?</h3><p>each dot is a test scan; further right means more uncertain</p></div></div>
+          <div id="t-unc-chart" class="chart"></div></div>
+        <div class="card"><div class="card-head"><div><h3>Declining the most uncertain scans</h3><p>mean error of the scans that remain</p></div></div>
+          <div id="t-rc-chart" class="chart"></div></div>
+        <div class="card"><div class="card-head"><div><h3>Do voxel probabilities mean what they say?</h3><p>within five voxels of the predicted or true region</p></div></div>
+          <div id="t-segcal-chart" class="chart"></div></div>
+        <div class="card"><div class="card-head"><div><h3>Can volumes be followed?</h3><p>predicted against reference volume, log scale</p></div></div>
+          <div id="t-vol-chart" class="chart"></div><p class="muted small" id="t-vol-note"></p></div>
+        <div class="card"><div class="card-head"><div><h3>Where it fails</h3><p>Dice by tertile of whole-tumour volume</p></div></div>
+          <div id="t-size-chart" class="chart"></div><p class="muted small" id="t-et-note"></p>
+          <div id="t-worst" class="table-scroll"></div></div>
+        <div class="card"><div class="card-head"><div><h3>Worse images</h3><p>mean Dice on the same scans under the same perturbations</p></div></div>
+          <div id="t-rob-chart" class="chart"></div><div id="t-rob-table" class="table-scroll"></div></div>
+        <div class="card"><div class="card-head"><div><h3>Which contrasts it relies on</h3><p>Dice lost when one contrast is removed, ours</p></div></div>
+          <div id="t-rel-ours" class="chart"></div></div>
+        <div class="card"><div class="card-head"><div><h3>Same test, U-Net from scratch</h3><p>for comparison</p></div></div>
+          <div id="t-rel-base" class="chart"></div></div>
+        <div class="card"><div class="card-head"><div><h3>Where the gradient points</h3><p>share of gradient × input inside the segmented tumour, by contrast</p></div></div>
+          <div id="t-sal-chart" class="chart"></div></div>
+        <div class="card" id="t-bil-card"><div class="card-head"><div><h3>The bilateral blocks</h3><p>how much the exchange changes the features, and whether left-right asymmetry alone finds the tumour</p></div></div>
+          <div id="t-bil-chart" class="chart"></div><p class="muted small" id="t-bil-note"></p></div>
+      </div>
+      <p class="muted small">Uncertainty and gradient maps of the showcase scans are in the <a href="#viewer">tumour viewer</a>, under Overlay.
+        Rules and limits: <a href="docs/trust/">the plan page</a>.</p>
+    </section>
+
+    <!-- ============================================================ trust: connectome -->
+    <section class="view" id="view-trust-fmri" aria-labelledby="h-tf">
+      <div class="view-head">
+        <div><span class="eyebrow">Trust · connectome classifier · 871 subjects, 20 sites</span><h1 id="h-tf">Audit: connectome</h1>
+          <p class="lede">An AUC alone does not say whether the probabilities can be believed, whether the classifier
+            is reading the site or the head motion instead of the brain, whether it holds in every group, or what it
+            looks at. The scorecard answers with rules written down in advance; the evidence follows.</p></div>
+      </div>
+      <div class="scorecard" id="t-score"><div class="pending">loading</div></div>
+      <div class="grid g-2">
+        <div class="card"><div class="card-head"><div><h3>Calibration</h3><p>predicted probability of autism against the observed fraction</p></div>
+          <div class="toolbar"><select id="t-cal-model" aria-label="Model"></select>
+            <div class="segmented" id="t-cal-scheme" role="group" aria-label="Protocol">
+              <button type="button" data-v="kfold" aria-pressed="true">10-fold</button>
+              <button type="button" data-v="loso" aria-pressed="false">Leave one site out</button>
+            </div></div></div>
+          <div id="t-cal-chart" class="chart"></div><p class="muted small" id="t-cal-note"></p></div>
+        <div class="card"><div class="card-head"><div><h3>All models</h3><p>raw and recalibrated; the recalibration is fitted on other folds only</p></div></div>
+          <div id="t-cal-table" class="table-scroll"></div></div>
+        <div class="card"><div class="card-head"><div><h3>Declining hard cases</h3><p>accuracy when only the most confident subjects are scored</p></div></div>
+          <div id="t-sel-chart" class="chart"></div><p class="muted small" id="t-sel-note"></p></div>
+        <div class="card"><div class="card-head"><div><h3>Is the AUC a shortcut?</h3><p>classifiers that see only nuisance variables, on the same folds</p></div></div>
+          <div id="t-short-chart" class="chart"></div><p class="muted small" id="t-short-note"></p></div>
+        <div class="card span-2"><div class="card-head"><div><h3>Every group</h3><p>AUC of the noise-aware model inside each group</p></div>
+          <div class="segmented" id="t-group" role="group" aria-label="Grouping">
+            <button type="button" data-v="site" aria-pressed="true">Site</button>
+            <button type="button" data-v="sex" aria-pressed="false">Sex</button>
+            <button type="button" data-v="age" aria-pressed="false">Age</button>
+            <button type="button" data-v="motion" aria-pressed="false">Motion</button>
+          </div></div>
+          <div id="t-group-chart" class="chart"></div><p class="muted small" id="t-group-note"></p></div>
+        <div class="card"><div class="card-head"><div><h3>What it looks at</h3><p>strongest regions of the shipped classifier</p></div>
+          <select id="t-atlas" aria-label="Atlas"></select></div>
+          <div id="t-roi-chart" class="chart"></div>
+          <p class="muted small">Features are entries of the matrix logarithm of the connectivity matrix, so a single entry is not one edge. Regions and lobe blocks are the safer reading.</p></div>
+        <div class="card"><div class="card-head"><div><h3>Lobe by lobe (AAL)</h3><p>weight per feature in each block of regions</p></div>
+          <div class="segmented" id="t-block-kind" role="group" aria-label="Weight">
+            <button type="button" data-v="mean_abs" aria-pressed="true">Strength</button>
+            <button type="button" data-v="mean_signed" aria-pressed="false">Direction</button>
+          </div></div>
+          <div id="t-block-chart" class="chart"></div></div>
+        <div class="card"><div class="card-head"><div><h3>Stable under refitting?</h3><p>30 bootstrap refits of the classifier</p></div></div>
+          <div id="t-stab-table" class="table-scroll"></div></div>
+        <div class="card"><div class="card-head"><div><h3>Is the explanation faithful?</h3><p>AUC after deleting the features an explanation names</p></div></div>
+          <div id="t-del-chart" class="chart"></div></div>
       </div>
     </section>
 

@@ -64,6 +64,31 @@ dashboard viewer. Gradient-times-input maps are known to be noisy; they are show
 as one more view and the quantitative statements rest on the perturbation
 experiments.
 
+## Scorecard
+
+The dashboard opens each audit with a scorecard that reduces the evidence to
+one line per question. The rules are fixed here, in round numbers taken from
+common practice, and are applied in the same way to every model. They were
+written after the first look at the connectome results and before the
+segmentation audit was run. A rule that is not met is shown as such.
+
+| Check | Holds | Partly |
+|---|---|---|
+| Connectome: probabilities mean what they say | calibration slope within 0.75 to 1.25 and ECE at most 0.05 | the same holds after recalibration but not before |
+| Connectome: not riding on the site | within-site AUC at least the overall AUC minus 0.02, and site-only AUC at most the overall AUC minus 0.10 | one of the two |
+| Connectome: not riding on head motion | motion-only AUC at most the overall AUC minus 0.10, and AUC inside motion terciles at least the overall minus 0.03 | one of the two |
+| Connectome: knows when it is unsure | accuracy on the most confident half at least 0.05 above the overall accuracy | at least 0.02 above |
+| Connectome: holds in every group | the interval excludes 0.5 for at least 80% of the scorable sites | at least 60% |
+| Connectome: the explanation is faithful | deleting 5% of the most supportive features lowers the AUC at least three times as much as deleting random ones | at least twice as much |
+| Connectome: the explanation is stable | rank correlation of node strengths between bootstrap refits at least 0.6 | at least 0.3 |
+| Segmentation: uncertainty flags bad scans | Spearman correlation of entropy with error at least 0.3 and its interval above 0 | positive with interval above 0 |
+| Segmentation: probabilities mean what they say | voxel ECE at most 0.05 in all three regions | at most 0.10 |
+| Segmentation: volumes can be followed | whole-tumour volume correlation at least 0.95 and median relative error at most 0.15 | correlation at least 0.90 |
+| Segmentation: survives noisy images | mean Dice drop at most 0.02 under noise of 0.2 standard deviations | at most 0.05 |
+| Segmentation: relies on the contrasts radiologists use | removing FLAIR hurts the whole tumour more than removing any other contrast, and removing T1 with gadolinium hurts the enhancing tumour more than any other | one of the two |
+| Segmentation: the mirror channel is used | mean Dice drop of at least 0.01 when the blocks cannot see the mirror image | positive drop |
+| Segmentation: more robust than the baseline | loses less Dice than the U-Net from scratch under at least 6 of the 8 perturbations | at least 4 |
+
 ## Limits
 
 These checks reduce the ways a model can mislead, they do not remove them.

@@ -243,7 +243,7 @@ export function dumbbell(el, { rows, aLabel, bLabel, aColor, bColor, xLabel, tip
 
 // ---------------------------------------------------------------- reliability diagram
 
-export function reliability(el, { series, height = 300 }) {
+export function reliability(el, { series, height = 300, xLabel = "predicted probability of autism", yLabel = "observed fraction" }) {
   const margin = { top: 12, right: 18, bottom: 44, left: 52 };
   const { g, iw, ih } = frame(el, { height, margin });
   const x = d3.scaleLinear().domain([0, 1]).range([0, iw]);
@@ -252,8 +252,8 @@ export function reliability(el, { series, height = 300 }) {
   g.append("g").attr("class", "axis").attr("transform", `translate(0,${ih})`).call(d3.axisBottom(x).ticks(5).tickSizeOuter(0));
   g.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(5).tickSize(0).tickPadding(8)).call((a) => a.select(".domain").remove());
   g.append("line").attr("x1", x(0)).attr("y1", y(0)).attr("x2", x(1)).attr("y2", y(1)).attr("stroke", css("--axis"));
-  g.append("text").attr("class", "label").attr("x", iw / 2).attr("y", ih + 38).attr("text-anchor", "middle").text("predicted probability of autism");
-  g.append("text").attr("class", "label").attr("transform", "rotate(-90)").attr("x", -ih / 2).attr("y", -40).attr("text-anchor", "middle").text("observed fraction");
+  g.append("text").attr("class", "label").attr("x", iw / 2).attr("y", ih + 38).attr("text-anchor", "middle").text(xLabel);
+  g.append("text").attr("class", "label").attr("transform", "rotate(-90)").attr("x", -ih / 2).attr("y", -40).attr("text-anchor", "middle").text(yLabel);
   series.forEach((s) => {
     const line = d3.line().x((p) => x(p.x)).y((p) => y(p.y));
     g.append("path").datum(s.points).attr("fill", "none").attr("stroke", s.color).attr("stroke-width", 2).attr("d", line);
