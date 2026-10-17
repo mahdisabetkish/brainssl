@@ -296,7 +296,7 @@ def run_file(smri_runs: Path, tag: str, name: str) -> Path:
 
 
 def build_cases(smri_runs: Path, out: Path, raw: Path, index_csv: Path, cases_json: Path,
-                budget: str = "10pct") -> None:
+                budget: str = "10pct", layers_root: Path | None = None) -> None:
     """Viewer volumes for the showcase scans, on the grid the network saw.
 
     The scans are listed in assets/showcase_cases.json, picked by tumour volume
@@ -334,6 +334,15 @@ def build_cases(smri_runs: Path, out: Path, raw: Path, index_csv: Path, cases_js
         flair = image[0]
         asym = np.abs(flair - flair[::-1]) / (np.percentile(flair[brain], 99) + 1e-6)
         files["asymmetry"] = save_volume(folder, "asymmetry", np.clip(asym, 0, 1) * 255 * brain)
+        layer = layers_root / f"ours_{budget}" / f"{case_id}.npz" if layers_root else None
+        if layer is not None and layer.exists():
+            maps = np.load(layer)
+            # entropy of the whole-tumour probability, 0 to ln 2 shown as 0 to 255
+            files["uncertainty"] = save_volume(folder, "uncertainty",
+                                               np.clip(maps["entropy"].astype(np.float32) / np.log(2), 0, 1) * 255 * brain)
+            sal = maps["saliency"].astype(np.float32)
+            top = np.percentile(sal[brain], 99.5) if brain.any() else 1.0
+            files["saliency"] = save_volume(folder, "saliency", np.clip(sal / max(top, 1e-9), 0, 1) * 255 * brain)
         volume_ml = float(row[["n_label1", "n_label2", "n_label3"]].sum()) / 1000
         entries.append({
             "id": case_id, "files": files, "window": window, "tag": f"{volume_ml:.0f} ml tumour",
@@ -344,6 +353,51 @@ def build_cases(smri_runs: Path, out: Path, raw: Path, index_csv: Path, cases_js
         })
     write_json(root / "index.json", {"cases": entries, "hero": entries[len(entries) // 2]["id"],
                                      "rule": chosen["rule"]})
+
+
+# --------------------------------------------------------------------------- trust
+
+_DROP_KEYS = ("strength", "names", "centroids_mm")
+
+
+def build_trust(trust: Path, out: Path) -> dict | None:
+    """Trust and interpretation results for the dashboard, from the files of ``brainssl trust``.
+
+    The three JSON files are copied with the per-ROI arrays left out (the
+    dashboard shows the strongest regions and the lobe blocks, not every ROI).
+    Returns a few headline numbers for the overview, or None when there is
+    nothing to show.
+    """
+    parts = {name: trust / f"trust_{name}.json" for name in ("fmri", "interpret", "smri")}
+    data = {name: read_json(path) for name, path in parts.items() if path.exists() and path.stat().st_size > 2}
+    if not data:
+        return None
+    if "interpret" in data:
+        for atlas in data["interpret"].get("weights", {}).values():
+            for key in _DROP_KEYS:
+                atlas.pop(key, None)
+    write_json(out / "trust.json", data)
+    head: dict = {}
+    f = data.get("fmri", {}).get("kfold")
+    if f:
+        rec = f["recalibration"]["vicinal"]
+        sc = f["shortcuts"]
+        head["fmri"] = {"ece_raw": rec["raw"]["ece"]["mean"], "ece_recalibrated": rec["recalibrated"]["ece"]["mean"],
+                        "slope_raw": rec["raw"]["slope"]["mean"],
+                        "auc": sc["model"]["auc"]["mean"], "auc_within_site": sc["model"]["auc_within_site"]["mean"],
+                        "site_only_auc": next(r["auc"]["mean"] for r in sc["nuisance_only"] if r["inputs"] == "site"),
+                        "motion_only_auc": next(r["auc"]["mean"] for r in sc["nuisance_only"] if r["inputs"] == "motion"),
+                        "accuracy_at_50": f["selective"]["vicinal"]["accuracy_at_50"],
+                        "accuracy_full": f["selective"]["vicinal"]["accuracy_full"]}
+    runs = data.get("smri", {}).get("runs", {})
+    ours = next((r for k, r in runs.items() if k.startswith("ours_")), None)
+    if ours:
+        rho = ours["uncertainty"]["WT"]["entropy"]["spearman"]["rho"]
+        blind = ours["robustness"]["perturbations"].get("mirror blind", {})
+        head["smri"] = {"run": ours["run"], "uncertainty_rho_wt": rho,
+                        "calibration_ece_wt": ours["calibration"]["WT"]["ece"],
+                        "mirror_blind_drop": blind.get("drop_mean")}
+    return head
 
 
 # --------------------------------------------------------------------------- fMRI demo
@@ -363,6 +417,8 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--deep-runs", type=Path, default=Path("runs/fmri"))
     parser.add_argument("--choices", type=Path, default=Path("assets/fmri_choices.json"))
     parser.add_argument("--exports", type=Path, default=Path("exports"))
+    parser.add_argument("--trust", type=Path, default=Path("report"),
+                        help="folder with trust_fmri.json, trust_interpret.json, trust_smri.json and layers/")
     parser.add_argument("--showcase-cases", type=Path, default=Path("assets/showcase_cases.json"))
     parser.add_argument("--raw", type=Path, default=Path("data/raw"))
     parser.add_argument("--processed", type=Path, default=Path("data/processed"))
@@ -407,6 +463,10 @@ def main(argv: list[str] | None = None) -> None:
                                      "baseline": [{"x": p["budget"], "y": p["dice_mean"]["mean"], "lo": p["dice_mean"]["lo"], "hi": p["dice_mean"]["hi"]} for p in smri["curve"]["baseline"]]}}
         first = read_json(args.showcase_cases)["cases"][0]
         if run_file(args.smri_runs, "ft_ours_10pct", f"predictions/{first}.npz").exists():
-            build_cases(args.smri_runs, args.out, args.raw, args.processed / "msd" / "index.csv", args.showcase_cases)
+            build_cases(args.smri_runs, args.out, args.raw, args.processed / "msd" / "index.csv", args.showcase_cases,
+                        layers_root=args.trust / "layers")
+    trust_head = build_trust(args.trust, args.out) if args.trust.exists() else None
+    if trust_head:
+        summary["trust"] = trust_head
     write_json(args.out / "summary.json", summary)
     log.info("dashboard data written to %s", args.out)

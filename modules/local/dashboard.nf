@@ -13,6 +13,7 @@ process DASHBOARD {
     path choices
     path showcase
     path exports
+    path trust
     path raw
     path processed_msd, stageAs: 'prepared_msd'
     path processed_abide, stageAs: 'prepared_abide'
@@ -32,7 +33,7 @@ process DASHBOARD {
     ln -s ../prepared_msd/msd processed/msd
     ln -s ../prepared_abide/abide processed/abide
     brainssl dashboard --smri-runs smri --study study --deep-runs fmri --choices ${choices} \
-        --showcase-cases ${showcase} --exports ${exports} --raw ${raw} --processed processed --out data
+        --showcase-cases ${showcase} --exports ${exports} --trust ${trust} --raw ${raw} --processed processed --out data
     """
 
     stub:

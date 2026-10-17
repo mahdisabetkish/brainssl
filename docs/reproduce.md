@@ -47,6 +47,9 @@ brainssl fmri study --scheme loso
 python scripts/run_fmri.py          # deep connectome baselines
 brainssl report                     # tables and tests
 brainssl export all                 # ONNX, refitted classifier, model cards
+brainssl trust fmri                 # calibration, subgroups, shortcut checks (see trust.md)
+brainssl trust interpret            # weight maps, stability, faithfulness
+brainssl trust smri --runs ours_10pct=runs/smri/ft_ours_10pct scratch_10pct=runs/smri/ft_unet_scratch_10pct     --pairs ours_10pct:scratch_10pct --layers-for assets/showcase_cases.json --layers-root report/layers
 brainssl dashboard                  # data behind the dashboard
 ```
 

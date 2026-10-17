@@ -81,6 +81,15 @@ jobs:
           F="--raw ci/raw --processed ci/processed"
           brainssl report --smri-runs ci/smri --study ci/fmri_study --deep-runs ci/fmri --choices $C --out ci/report
           brainssl export all --out ci/exports --smri-run ci/smri/ft_ours_10pct $F --choices $C --report ci/report/results.json --folds 2
+          brainssl trust fmri --study ci/fmri_study --choices $C --raw ci/raw --out ci/trust/trust_fmri.json
+          brainssl trust interpret --connectome ci/exports/connectome --choices $C $F --bootstraps 3 \
+            --stability-atlases aal --deletion-atlases aal --out ci/trust/trust_interpret.json
+          brainssl trust smri --runs ours_10pct=ci/smri/ft_ours_10pct scratch_10pct=ci/smri/ft_unet_scratch_10pct \
+            --pairs ours_10pct:scratch_10pct --robust-cases 2 --layers-for assets/test/showcase_cases.json \
+            --layers-root ci/trust/layers --raw ci/raw --index ci/processed/msd/index.csv \
+            --splits ci/processed/msd/splits.json --out ci/trust/trust_smri.json
+          brainssl trust report --dir ci/trust --out ci/trust_results.md
           brainssl dashboard --smri-runs ci/smri --study ci/fmri_study --deep-runs ci/fmri --choices $C \
-            --showcase-cases assets/test/showcase_cases.json --exports ci/exports $F --out ci/dashboard
+            --showcase-cases assets/test/showcase_cases.json --exports ci/exports --trust ci/trust $F --out ci/dashboard
           test -s ci/dashboard/summary.json && test -s ci/dashboard/fmri.json && test -s ci/dashboard/cases/index.json
+          test -s ci/dashboard/trust.json && test -s ci/trust_results.md

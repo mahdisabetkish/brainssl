@@ -31,6 +31,7 @@ include { FMRI_STUDY     } from './modules/local/fmri_study'
 include { FMRI_DEEP      } from './modules/local/fmri_deep'
 include { EXPORT_MODELS  } from './modules/local/export_models'
 include { REPORT         } from './modules/local/report'
+include { TRUST          } from './modules/local/trust'
 include { DASHBOARD      } from './modules/local/dashboard'
 
 
@@ -139,7 +140,9 @@ workflow {
 
     if( params.export && 'smri' in tracks && 'fmri' in tracks ) {
         EXPORT_MODELS(all_smri, raw, processed_abide, choices, REPORT.out.report)
-        DASHBOARD(all_smri, all_fmri, choices, showcase, EXPORT_MODELS.out.exports, raw, processed_msd, processed_abide)
+        TRUST(all_smri, all_fmri, choices, showcase, EXPORT_MODELS.out.exports, raw, processed_msd, processed_abide)
+        DASHBOARD(all_smri, all_fmri, choices, showcase, EXPORT_MODELS.out.exports, TRUST.out.trust, raw,
+                  processed_msd, processed_abide)
     }
 
     workflow.onComplete = {

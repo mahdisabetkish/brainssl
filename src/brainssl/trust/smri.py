@@ -236,11 +236,12 @@ def saliency(model, image: torch.Tensor, regions: np.ndarray, window,
 
 
 def audit_run(run: Path, split: str = "test", robust_cases: int = 24, saliency_cases: int = 24,
-              layers_for: list[str] | None = None, layers_dir: Path | None = None, raw: str | None = None) -> dict:
+              layers_for: list[str] | None = None, layers_dir: Path | None = None, raw: str | None = None,
+              index_path: str | None = None, splits_path: str | None = None) -> dict:
     """The full audit of one run. Slow: about ten forward passes per robustness scan."""
     cfg = json.loads((run / "config.json").read_text())
-    splits = json.loads(Path(cfg["splits"]).read_text())
-    index = pd.read_csv(cfg["index"]).set_index("case_id")
+    splits = json.loads(Path(splits_path or cfg["splits"]).read_text())
+    index = pd.read_csv(index_path or cfg["index"]).set_index("case_id")
     case_ids = splits[split]
     model = load_model(run)
     device = next(model.parameters()).device
@@ -401,7 +402,8 @@ def compare_robustness(a: dict, b: dict) -> dict:
 
 
 def audit(runs: dict[str, Path], out: Path, layers_for: list[str] | None = None, layers_root: Path | None = None,
-          robust_cases: int = 24, raw: str | None = None, pairs: list[tuple[str, str]] | None = None) -> dict:
+          robust_cases: int = 24, raw: str | None = None, pairs: list[tuple[str, str]] | None = None,
+          index_path: str | None = None, splits_path: str | None = None) -> dict:
     """Audit several runs and write one JSON; raw per-run results are cached next to it.
 
     ``pairs`` lists (proposed, reference) labels whose robustness is compared case by case.
@@ -414,7 +416,8 @@ def audit(runs: dict[str, Path], out: Path, layers_for: list[str] | None = None,
             raw_result = json.loads(cache.read_text())
         else:
             raw_result = audit_run(run, robust_cases=robust_cases, saliency_cases=robust_cases, layers_for=layers_for,
-                                   layers_dir=(layers_root / label) if layers_root else None, raw=raw)
+                                   layers_dir=(layers_root / label) if layers_root else None, raw=raw,
+                                   index_path=index_path, splits_path=splits_path)
             write_json(cache, raw_result)
         summaries[label] = summarise_run(raw_result)
         log.info("audited %s", label)

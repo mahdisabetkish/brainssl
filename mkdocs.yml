@@ -45,6 +45,7 @@ nav:
       - Bilateral U-Net and contralateral masking: methods/smri.md
       - Noise-aware connectome classifier: methods/fmri.md
   - Evaluation protocol: protocol.md
+  - Interpretability and trust: trust.md
   - Results: results.md
   - Reproduce:
       - Pipeline, Docker, cluster: reproduce.md

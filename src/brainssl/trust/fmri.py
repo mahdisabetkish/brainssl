@@ -110,16 +110,20 @@ def selective_block(y: np.ndarray, prob: np.ndarray) -> dict:
 
 def subgroup_block(y: np.ndarray, p: np.ndarray, pheno: pd.DataFrame) -> dict:
     """AUC by site, sex, age tercile and motion tercile; ``p`` is one probability per subject."""
-    age = pd.qcut(pheno["age"], 3, labels=["youngest third", "middle third", "oldest third"]).astype(str)
-    fd = pd.qcut(pheno["func_mean_fd"], 3, labels=["least motion", "middle third", "most motion"]).astype(str)
+    # ranks first, so that ties cannot make two terciles collapse
+    age = pd.qcut(pheno["age"].rank(method="first"), 3,
+                  labels=["youngest third", "middle third", "oldest third"]).astype(str)
+    fd = pd.qcut(pheno["func_mean_fd"].rank(method="first"), 3,
+                 labels=["least motion", "middle third", "most motion"]).astype(str)
     sex = np.where(pheno["sex"] == 1, "female", "male")
     out = {"site": subgroup_auc(y, p, pheno["site"].to_numpy()),
            "sex": subgroup_auc(y, p, sex), "age": subgroup_auc(y, p, age.to_numpy()),
            "motion": subgroup_auc(y, p, fd.to_numpy())}
     sites = [r for r in out["site"] if r["auc"] is not None]
     out["site_summary"] = {"sites_scored": len(sites), "sites_total": len(out["site"]),
-                           "worst_auc": min(r["auc"] for r in sites), "best_auc": max(r["auc"] for r in sites),
-                           "median_auc": float(np.median([r["auc"] for r in sites])),
+                           "worst_auc": min((r["auc"] for r in sites), default=None),
+                           "best_auc": max((r["auc"] for r in sites), default=None),
+                           "median_auc": float(np.median([r["auc"] for r in sites])) if sites else None,
                            "sites_ci_above_half": int(sum(r["ci_low"] > 0.5 for r in sites))}
     return out
 
@@ -154,7 +158,7 @@ def shortcut_block(y: np.ndarray, prob: np.ndarray, pheno: pd.DataFrame, folds: 
         out["nuisance_only"].append({"inputs": kind, "auc": _ms(aucs)})
     sites = pheno["site"].to_numpy()
     fd = pheno["func_mean_fd"].to_numpy(float)
-    tercile = pd.qcut(fd, 3, labels=False)
+    tercile = pd.qcut(pd.Series(fd).rank(method="first"), 3, labels=False).to_numpy()
     out["model"] = {
         "auc": _ms([auc_score(y, p) for p in prob]),
         "auc_within_site": _ms([within_group_auc(y, p, sites) for p in prob]),

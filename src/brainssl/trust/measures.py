@@ -166,7 +166,7 @@ def agreement(pred: np.ndarray, ref: np.ndarray) -> dict[str, float]:
             "loa_high": float(d.mean() + 1.96 * sd),
             "relative_error": float(np.median(np.abs(d[pos]) / ref[pos])) if pos.any() else float("nan"),
             "pearson": float(sps.pearsonr(pred, ref)[0]) if varied else float("nan"),
-            "spearman": float(sps.spearmanr(pred, ref)[0]) if len(d) > 2 else float("nan")}
+            "spearman": float(sps.spearmanr(pred, ref)[0]) if varied else float("nan")}
 
 
 def rank_correlation(a: np.ndarray, b: np.ndarray, n_boot: int = 1000, seed: int = 0) -> dict[str, float]:

@@ -81,6 +81,7 @@ brainssl trust fmri --study runs/fmri_study --out report/trust_fmri.json
 brainssl trust interpret --connectome exports/connectome --out report/trust_interpret.json
 brainssl trust smri --runs ours10=runs/smri/ft_ours_10pct scratch10=runs/smri/ft_unet_scratch_10pct \
     --out report/trust_smri.json
+brainssl trust report --dir report --out docs/trust_results.md
 ```
 
 The segmentation audit takes about 15 minutes per model on a GTX 1080 Ti and

@@ -11,6 +11,7 @@ processes, the Docker entrypoint and the README call.
     brainssl fmri cv                   score one connectome classifier under one protocol
     brainssl export ...                ONNX models and metadata for Rust and the browser
     brainssl report                    results tables and paired tests
+    brainssl trust fmri|interpret|smri calibration, shortcut, interpretation and robustness audits
     brainssl dashboard                 the data files behind the dashboard
 """
 
@@ -101,6 +102,12 @@ def _report(args: argparse.Namespace, rest: list[str]) -> None:
     report_main(rest)
 
 
+def _trust(args: argparse.Namespace, rest: list[str]) -> None:
+    from .trust.cli import main as trust_main
+
+    trust_main(rest)
+
+
 def _dashboard(args: argparse.Namespace, rest: list[str]) -> None:
     from .report.dashboard import main as dashboard_main
 
@@ -131,11 +138,13 @@ def main(argv: list[str] | None = None) -> None:
                    add_help=False).add_argument("stage", choices=["study", "cv"])
     sub.add_parser("export", help="export trained models (brainssl export --help)", add_help=False)
     sub.add_parser("report", help="tables and statistics (brainssl report --help)", add_help=False)
+    sub.add_parser("trust", help="interpretability and trust audits (brainssl trust --help)", add_help=False)
     sub.add_parser("dashboard", help="data files for the dashboard (brainssl dashboard --help)", add_help=False)
 
     args, rest = parser.parse_known_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", datefmt="%H:%M:%S")
-    handlers = {"smri": _smri, "fmri": _fmri, "export": _export, "report": _report, "dashboard": _dashboard}
+    handlers = {"smri": _smri, "fmri": _fmri, "export": _export, "report": _report, "trust": _trust,
+                "dashboard": _dashboard}
     if args.command in handlers:
         handlers[args.command](args, rest)
         return
