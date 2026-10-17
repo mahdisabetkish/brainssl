@@ -92,11 +92,20 @@ number of steps on the plain U-Net.
 
 | | Pretraining | Fine-tuning |
 |---|---|---|
-| Steps | 10,000 | 2,500 / 3,000 / 5,000 / 8,000 for 5 / 10 / 25 / 100% labels |
+| Steps | 30,000 | 2,500 / 3,000 / 5,000 / 8,000 for 5 / 10 / 25 / 100% labels |
 | Batch | 2 patches of 160 x 128 x 128 | 2 patches, half centred on tumour |
 | Optimiser | AdamW, lr 3e-4, cosine, 500 warm-up steps | SGD, Nesterov momentum 0.99, lr 1e-2, poly decay (as nnU-Net) |
 | Loss | MSE on hidden voxels inside the brain | soft Dice + BCE per region, deep supervision 1 / 0.5 / 0.25 |
 | Augmentation | none beyond the masks | flips, pitch rotation, small tilts, scaling, gamma, contrast, noise, blur |
+
+How the pretraining length was chosen. A first round pretrained for 10,000
+steps and showed no gain at 10% of the labels (validation Dice 0.756 against 0.760
+from scratch). Only the validation scans were used to decide what to change: a
+pretraining three times as long reached 0.773 on the same 78 validation scans
+(paired Wilcoxon p = 0.088 against scratch), so the whole matrix was rerun with
+30,000 steps, and the random-masking comparison was given the same 30,000 steps.
+The test scores of the first round are listed next to the final ones on the
+results page.
 
 Every run, baseline or not, uses the same architecture backbone, the same data
 pipeline, the same augmentation and the same number of steps for a given label
