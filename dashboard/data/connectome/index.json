@@ -1,0 +1,24 @@
+{
+  "atlases": [
+    {
+      "id": "cc200",
+      "label": "CC200 (200 regions)"
+    },
+    {
+      "id": "cc400",
+      "label": "CC400 (392 regions)"
+    },
+    {
+      "id": "aal",
+      "label": "AAL (116 regions)"
+    },
+    {
+      "id": "ho",
+      "label": "Harvard-Oxford (111 regions)"
+    },
+    {
+      "id": "dosenbach160",
+      "label": "Dosenbach (161 regions)"
+    }
+  ]
+}

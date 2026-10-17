@@ -48,6 +48,8 @@ def export_segmentation(weights: Path, out_dir: Path, bilateral: bool,
         ref = model(torch.from_numpy(x)).detach().numpy()
         got = session.run(["logits"], {"image": x})[0]
         err = float(np.abs(ref - got).max())
-        if err > 1e-3:
-            raise RuntimeError(f"ONNX output differs from PyTorch by {err:.2e}")
+        # Gaussian noise is far from any scan, so the logits can reach the hundreds; the tolerance follows their scale
+        scale = max(1.0, float(np.abs(ref).max()))
+        if err / scale > 1e-3:
+            raise RuntimeError(f"ONNX output differs from PyTorch by {err:.2e} (logits up to {scale:.1f})")
     return path

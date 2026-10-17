@@ -1,0 +1,429 @@
+{
+  "model": {
+    "windows": {
+      "count": 6,
+      "fraction": 0.7,
+      "min_length": 40
+    },
+    "atlases": {
+      "cc200": {
+        "file": "model_cc200.bin",
+        "bias": -0.1757611579403929,
+        "n_features": 20100
+      },
+      "aal": {
+        "file": "model_aal.bin",
+        "bias": -0.16844185999414374,
+        "n_features": 6786
+      },
+      "ho": {
+        "file": "model_ho.bin",
+        "bias": -0.15774250304148035,
+        "n_features": 6216
+      }
+    },
+    "split": "repeat 1, fold 1 of the reported cross-validation"
+  },
+  "subjects": [
+    {
+      "id": "UCLA_1_0051268",
+      "site": "UCLA_1",
+      "label": 0,
+      "atlases": {
+        "cc200": {
+          "file": "UCLA_1_0051268_cc200.bin",
+          "T": 116,
+          "R": 200,
+          "python_probability": 0.2992253397448935
+        },
+        "aal": {
+          "file": "UCLA_1_0051268_aal.bin",
+          "T": 116,
+          "R": 116,
+          "python_probability": 0.2689499017302791
+        },
+        "ho": {
+          "file": "UCLA_1_0051268_ho.bin",
+          "T": 116,
+          "R": 111,
+          "python_probability": 0.3891296281990751
+        }
+      }
+    },
+    {
+      "id": "KKI_0050820",
+      "site": "KKI",
+      "label": 0,
+      "atlases": {
+        "cc200": {
+          "file": "KKI_0050820_cc200.bin",
+          "T": 152,
+          "R": 200,
+          "python_probability": 0.42668550064331173
+        },
+        "aal": {
+          "file": "KKI_0050820_aal.bin",
+          "T": 152,
+          "R": 116,
+          "python_probability": 0.4531376437937116
+        },
+        "ho": {
+          "file": "KKI_0050820_ho.bin",
+          "T": 152,
+          "R": 111,
+          "python_probability": 0.38719229838734937
+        }
+      }
+    },
+    {
+      "id": "CMU_a_0050665",
+      "site": "CMU",
+      "label": 0,
+      "atlases": {
+        "cc200": {
+          "file": "CMU_a_0050665_cc200.bin",
+          "T": 236,
+          "R": 200,
+          "python_probability": 0.32673025560296165
+        },
+        "aal": {
+          "file": "CMU_a_0050665_aal.bin",
+          "T": 236,
+          "R": 116,
+          "python_probability": 0.4160981040021753
+        },
+        "ho": {
+          "file": "CMU_a_0050665_ho.bin",
+          "T": 236,
+          "R": 111,
+          "python_probability": 0.34050697348128434
+        }
+      }
+    },
+    {
+      "id": "OHSU_0050169",
+      "site": "OHSU",
+      "label": 0,
+      "atlases": {
+        "cc200": {
+          "file": "OHSU_0050169_cc200.bin",
+          "T": 78,
+          "R": 200,
+          "python_probability": 0.3273850335675871
+        },
+        "aal": {
+          "file": "OHSU_0050169_aal.bin",
+          "T": 78,
+          "R": 116,
+          "python_probability": 0.4942377413739475
+        },
+        "ho": {
+          "file": "OHSU_0050169_ho.bin",
+          "T": 78,
+          "R": 111,
+          "python_probability": 0.48504287180871386
+        }
+      }
+    },
+    {
+      "id": "NYU_0051059",
+      "site": "NYU",
+      "label": 0,
+      "atlases": {
+        "cc200": {
+          "file": "NYU_0051059_cc200.bin",
+          "T": 176,
+          "R": 200,
+          "python_probability": 0.3357497369846904
+        },
+        "aal": {
+          "file": "NYU_0051059_aal.bin",
+          "T": 176,
+          "R": 116,
+          "python_probability": 0.21504497491798086
+        },
+        "ho": {
+          "file": "NYU_0051059_ho.bin",
+          "T": 176,
+          "R": 111,
+          "python_probability": 0.39776633422862656
+        }
+      }
+    },
+    {
+      "id": "NYU_0051038",
+      "site": "NYU",
+      "label": 0,
+      "atlases": {
+        "cc200": {
+          "file": "NYU_0051038_cc200.bin",
+          "T": 176,
+          "R": 200,
+          "python_probability": 0.3330641617835575
+        },
+        "aal": {
+          "file": "NYU_0051038_aal.bin",
+          "T": 176,
+          "R": 116,
+          "python_probability": 0.48092385382582237
+        },
+        "ho": {
+          "file": "NYU_0051038_ho.bin",
+          "T": 176,
+          "R": 111,
+          "python_probability": 0.5434624783102282
+        }
+      }
+    },
+    {
+      "id": "Caltech_0051491",
+      "site": "CALTECH",
+      "label": 0,
+      "atlases": {
+        "cc200": {
+          "file": "Caltech_0051491_cc200.bin",
+          "T": 146,
+          "R": 200,
+          "python_probability": 0.5162518905393809
+        },
+        "aal": {
+          "file": "Caltech_0051491_aal.bin",
+          "T": 146,
+          "R": 116,
+          "python_probability": 0.3578556768449104
+        },
+        "ho": {
+          "file": "Caltech_0051491_ho.bin",
+          "T": 146,
+          "R": 111,
+          "python_probability": 0.4311644197414966
+        }
+      }
+    },
+    {
+      "id": "Pitt_0050060",
+      "site": "PITT",
+      "label": 0,
+      "atlases": {
+        "cc200": {
+          "file": "Pitt_0050060_cc200.bin",
+          "T": 196,
+          "R": 200,
+          "python_probability": 0.3701947098283731
+        },
+        "aal": {
+          "file": "Pitt_0050060_aal.bin",
+          "T": 196,
+          "R": 116,
+          "python_probability": 0.28841000961393093
+        },
+        "ho": {
+          "file": "Pitt_0050060_ho.bin",
+          "T": 196,
+          "R": 111,
+          "python_probability": 0.41229716650076054
+        }
+      }
+    },
+    {
+      "id": "Stanford_0051179",
+      "site": "STANFORD",
+      "label": 1,
+      "atlases": {
+        "cc200": {
+          "file": "Stanford_0051179_cc200.bin",
+          "T": 176,
+          "R": 200,
+          "python_probability": 0.6199395228566348
+        },
+        "aal": {
+          "file": "Stanford_0051179_aal.bin",
+          "T": 176,
+          "R": 116,
+          "python_probability": 0.4445834256373498
+        },
+        "ho": {
+          "file": "Stanford_0051179_ho.bin",
+          "T": 176,
+          "R": 111,
+          "python_probability": 0.46192716566006853
+        }
+      }
+    },
+    {
+      "id": "Trinity_0050234",
+      "site": "TRINITY",
+      "label": 1,
+      "atlases": {
+        "cc200": {
+          "file": "Trinity_0050234_cc200.bin",
+          "T": 146,
+          "R": 200,
+          "python_probability": 0.5017810084265388
+        },
+        "aal": {
+          "file": "Trinity_0050234_aal.bin",
+          "T": 146,
+          "R": 116,
+          "python_probability": 0.5262412746224499
+        },
+        "ho": {
+          "file": "Trinity_0050234_ho.bin",
+          "T": 146,
+          "R": 111,
+          "python_probability": 0.4729152005515781
+        }
+      }
+    },
+    {
+      "id": "USM_0050518",
+      "site": "USM",
+      "label": 1,
+      "atlases": {
+        "cc200": {
+          "file": "USM_0050518_cc200.bin",
+          "T": 236,
+          "R": 200,
+          "python_probability": 0.5748025534674552
+        },
+        "aal": {
+          "file": "USM_0050518_aal.bin",
+          "T": 236,
+          "R": 116,
+          "python_probability": 0.5339412607179868
+        },
+        "ho": {
+          "file": "USM_0050518_ho.bin",
+          "T": 236,
+          "R": 111,
+          "python_probability": 0.6194639935334398
+        }
+      }
+    },
+    {
+      "id": "UCLA_1_0051249",
+      "site": "UCLA_1",
+      "label": 1,
+      "atlases": {
+        "cc200": {
+          "file": "UCLA_1_0051249_cc200.bin",
+          "T": 116,
+          "R": 200,
+          "python_probability": 0.5143373528057029
+        },
+        "aal": {
+          "file": "UCLA_1_0051249_aal.bin",
+          "T": 116,
+          "R": 116,
+          "python_probability": 0.4942442711554821
+        },
+        "ho": {
+          "file": "UCLA_1_0051249_ho.bin",
+          "T": 116,
+          "R": 111,
+          "python_probability": 0.5075225629760383
+        }
+      }
+    },
+    {
+      "id": "UM_2_0050406",
+      "site": "UM_2",
+      "label": 1,
+      "atlases": {
+        "cc200": {
+          "file": "UM_2_0050406_cc200.bin",
+          "T": 296,
+          "R": 200,
+          "python_probability": 0.5549103288772477
+        },
+        "aal": {
+          "file": "UM_2_0050406_aal.bin",
+          "T": 296,
+          "R": 116,
+          "python_probability": 0.6273921132825189
+        },
+        "ho": {
+          "file": "UM_2_0050406_ho.bin",
+          "T": 296,
+          "R": 111,
+          "python_probability": 0.49190769456991984
+        }
+      }
+    },
+    {
+      "id": "NYU_0050995",
+      "site": "NYU",
+      "label": 1,
+      "atlases": {
+        "cc200": {
+          "file": "NYU_0050995_cc200.bin",
+          "T": 176,
+          "R": 200,
+          "python_probability": 0.5781961149339229
+        },
+        "aal": {
+          "file": "NYU_0050995_aal.bin",
+          "T": 176,
+          "R": 116,
+          "python_probability": 0.4993184713334957
+        },
+        "ho": {
+          "file": "NYU_0050995_ho.bin",
+          "T": 176,
+          "R": 111,
+          "python_probability": 0.42917533709041755
+        }
+      }
+    },
+    {
+      "id": "Stanford_0051161",
+      "site": "STANFORD",
+      "label": 1,
+      "atlases": {
+        "cc200": {
+          "file": "Stanford_0051161_cc200.bin",
+          "T": 176,
+          "R": 200,
+          "python_probability": 0.7330507355596482
+        },
+        "aal": {
+          "file": "Stanford_0051161_aal.bin",
+          "T": 176,
+          "R": 116,
+          "python_probability": 0.7285563977483285
+        },
+        "ho": {
+          "file": "Stanford_0051161_ho.bin",
+          "T": 176,
+          "R": 111,
+          "python_probability": 0.5868315779478042
+        }
+      }
+    },
+    {
+      "id": "UCLA_1_0051225",
+      "site": "UCLA_1",
+      "label": 1,
+      "atlases": {
+        "cc200": {
+          "file": "UCLA_1_0051225_cc200.bin",
+          "T": 116,
+          "R": 200,
+          "python_probability": 0.5988791081931573
+        },
+        "aal": {
+          "file": "UCLA_1_0051225_aal.bin",
+          "T": 116,
+          "R": 116,
+          "python_probability": 0.6500393956854212
+        },
+        "ho": {
+          "file": "UCLA_1_0051225_ho.bin",
+          "T": 116,
+          "R": 111,
+          "python_probability": 0.5293758904099441
+        }
+      }
+    }
+  ]
+}

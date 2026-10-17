@@ -1,0 +1,194 @@
+{
+  "cases": [
+    {
+      "id": "BRATS_315",
+      "files": {
+        "FLAIR": "data/cases/BRATS_315/flair.nii.gz",
+        "T1": "data/cases/BRATS_315/t1.nii.gz",
+        "T1Gd": "data/cases/BRATS_315/t1gd.nii.gz",
+        "T2": "data/cases/BRATS_315/t2.nii.gz",
+        "truth": "data/cases/BRATS_315/truth.nii.gz",
+        "ours": "data/cases/BRATS_315/ours.nii.gz",
+        "baseline": "data/cases/BRATS_315/baseline.nii.gz",
+        "errors": "data/cases/BRATS_315/errors.nii.gz",
+        "asymmetry": "data/cases/BRATS_315/asymmetry.nii.gz",
+        "uncertainty": "data/cases/BRATS_315/uncertainty.nii.gz",
+        "saliency": "data/cases/BRATS_315/saliency.nii.gz"
+      },
+      "window": [
+        160,
+        128,
+        128
+      ],
+      "tag": "37 ml tumour",
+      "dice": {
+        "ours": {
+          "WT": 0.7767229014411584,
+          "TC": 0.8063292045535906,
+          "ET": 0.6178794178794179
+        },
+        "baseline": {
+          "WT": 0.7574782187802517,
+          "TC": 0.8019406392694064,
+          "ET": 0.6059626073774633
+        }
+      },
+      "hd95": {
+        "ours": {
+          "WT": 8.831760866327848,
+          "TC": 19.03023678436303,
+          "ET": 8.148564151530563
+        },
+        "baseline": {
+          "WT": 7.280109889280518,
+          "TC": 5.0,
+          "ET": 4.69041575982343
+        }
+      },
+      "note": "Chosen as the median-volume test scan of one quartile of tumour volume, before any model was scored on it."
+    },
+    {
+      "id": "BRATS_478",
+      "files": {
+        "FLAIR": "data/cases/BRATS_478/flair.nii.gz",
+        "T1": "data/cases/BRATS_478/t1.nii.gz",
+        "T1Gd": "data/cases/BRATS_478/t1gd.nii.gz",
+        "T2": "data/cases/BRATS_478/t2.nii.gz",
+        "truth": "data/cases/BRATS_478/truth.nii.gz",
+        "ours": "data/cases/BRATS_478/ours.nii.gz",
+        "baseline": "data/cases/BRATS_478/baseline.nii.gz",
+        "errors": "data/cases/BRATS_478/errors.nii.gz",
+        "asymmetry": "data/cases/BRATS_478/asymmetry.nii.gz",
+        "uncertainty": "data/cases/BRATS_478/uncertainty.nii.gz",
+        "saliency": "data/cases/BRATS_478/saliency.nii.gz"
+      },
+      "window": [
+        160,
+        128,
+        128
+      ],
+      "tag": "77 ml tumour",
+      "dice": {
+        "ours": {
+          "WT": 0.9038528474657956,
+          "TC": 0.865581602494028,
+          "ET": 0.9154017620210168
+        },
+        "baseline": {
+          "WT": 0.9134577609684316,
+          "TC": 0.906554311141684,
+          "ET": 0.9047532983914692
+        }
+      },
+      "hd95": {
+        "ours": {
+          "WT": 13.468469453537027,
+          "TC": 5.477225575051661,
+          "ET": 1.9062177826490092
+        },
+        "baseline": {
+          "WT": 11.489125293076055,
+          "TC": 5.477225575051661,
+          "ET": 3.605551275463989
+        }
+      },
+      "note": "Chosen as the median-volume test scan of one quartile of tumour volume, before any model was scored on it."
+    },
+    {
+      "id": "BRATS_345",
+      "files": {
+        "FLAIR": "data/cases/BRATS_345/flair.nii.gz",
+        "T1": "data/cases/BRATS_345/t1.nii.gz",
+        "T1Gd": "data/cases/BRATS_345/t1gd.nii.gz",
+        "T2": "data/cases/BRATS_345/t2.nii.gz",
+        "truth": "data/cases/BRATS_345/truth.nii.gz",
+        "ours": "data/cases/BRATS_345/ours.nii.gz",
+        "baseline": "data/cases/BRATS_345/baseline.nii.gz",
+        "errors": "data/cases/BRATS_345/errors.nii.gz",
+        "asymmetry": "data/cases/BRATS_345/asymmetry.nii.gz",
+        "uncertainty": "data/cases/BRATS_345/uncertainty.nii.gz",
+        "saliency": "data/cases/BRATS_345/saliency.nii.gz"
+      },
+      "window": [
+        160,
+        128,
+        128
+      ],
+      "tag": "122 ml tumour",
+      "dice": {
+        "ours": {
+          "WT": 0.9146170421155728,
+          "TC": 0.762141750158252,
+          "ET": 0.8762110597704575
+        },
+        "baseline": {
+          "WT": 0.9154638175440863,
+          "TC": 0.9010083944881474,
+          "ET": 0.8678060181127666
+        }
+      },
+      "hd95": {
+        "ours": {
+          "WT": 4.123105625617661,
+          "TC": 11.04536101718726,
+          "ET": 1.7320508075688772
+        },
+        "baseline": {
+          "WT": 6.782329983125268,
+          "TC": 5.744562646538029,
+          "ET": 2.23606797749979
+        }
+      },
+      "note": "Chosen as the median-volume test scan of one quartile of tumour volume, before any model was scored on it."
+    },
+    {
+      "id": "BRATS_320",
+      "files": {
+        "FLAIR": "data/cases/BRATS_320/flair.nii.gz",
+        "T1": "data/cases/BRATS_320/t1.nii.gz",
+        "T1Gd": "data/cases/BRATS_320/t1gd.nii.gz",
+        "T2": "data/cases/BRATS_320/t2.nii.gz",
+        "truth": "data/cases/BRATS_320/truth.nii.gz",
+        "ours": "data/cases/BRATS_320/ours.nii.gz",
+        "baseline": "data/cases/BRATS_320/baseline.nii.gz",
+        "errors": "data/cases/BRATS_320/errors.nii.gz",
+        "asymmetry": "data/cases/BRATS_320/asymmetry.nii.gz",
+        "uncertainty": "data/cases/BRATS_320/uncertainty.nii.gz",
+        "saliency": "data/cases/BRATS_320/saliency.nii.gz"
+      },
+      "window": [
+        160,
+        128,
+        128
+      ],
+      "tag": "181 ml tumour",
+      "dice": {
+        "ours": {
+          "WT": 0.9087856058626308,
+          "TC": 0.598693390254946,
+          "ET": 0.7001980044259812
+        },
+        "baseline": {
+          "WT": 0.9062612797891362,
+          "TC": 0.7084034638370533,
+          "ET": 0.6642692011302338
+        }
+      },
+      "hd95": {
+        "ours": {
+          "WT": 7.810249675906654,
+          "TC": 22.836366628784624,
+          "ET": 7.071067811865476
+        },
+        "baseline": {
+          "WT": 6.782329983125268,
+          "TC": 19.4164878389476,
+          "ET": 8.06225774829855
+        }
+      },
+      "note": "Chosen as the median-volume test scan of one quartile of tumour volume, before any model was scored on it."
+    }
+  ],
+  "hero": "BRATS_345",
+  "rule": "median-volume test scan of each quartile of reference tumour volume"
+}

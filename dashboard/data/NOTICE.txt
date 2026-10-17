@@ -1,0 +1,5 @@
+Files in this folder are derived from public research data.
+cases/    four scans of the Medical Segmentation Decathlon Task01 (BraTS 2016/17), CC BY-SA 4.0,
+          with the predictions of the models in this repository.
+demo/     one subject of ABIDE I (Preprocessed), CC BY-NC-SA.
+Everything else is computed from the runs and is covered by the repository licence.
