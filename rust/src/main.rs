@@ -143,6 +143,8 @@ fn run() -> Result<()> {
                 "voxels: oedema {}, non-enhancing {}, enhancing {} ({:.1}s)",
                 counts[0], counts[1], counts[2], start.elapsed().as_secs_f64()
             );
+            // dropping the session unloads the ONNX Runtime library, which crashes on some Linux builds
+            std::mem::forget(session);
         }
         Command::Classify { model, timeseries, atlas } => {
             let result = connectome::classify(model, timeseries, atlas, cli.threads)?;
