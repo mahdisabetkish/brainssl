@@ -80,16 +80,27 @@ async function runFmri() {
 
 // ---------------------------------------------------------------- MRI
 
-let ort = null;
 let segViewer = null;
+let segWorker = null;
 
-async function loadOrt() {
-  if (ort) return ort;
-  const useGpu = !!navigator.gpu;
-  ort = await import(`${ORT}${useGpu ? "ort.webgpu.min.mjs" : "ort.min.mjs"}`);
-  ort.env.wasm.wasmPaths = ORT;
-  ort.env.wasm.numThreads = Math.min(4, navigator.hardwareConcurrency || 2);
-  return ort;
+// One request at a time to the worker that holds the network.
+function ask(worker, message, transfer = []) {
+  return new Promise((resolve, reject) => {
+    worker.onmessage = (event) => (event.data.type === "error" ? reject(new Error(event.data.message)) : resolve(event.data));
+    worker.onerror = (event) => reject(new Error(event.message || "the model worker stopped"));
+    worker.postMessage(message, transfer);
+  });
+}
+
+function stopSegmentation(message) {
+  if (segWorker) { segWorker.terminate(); segWorker = null; }
+  const button = document.getElementById("seg-run");
+  button.innerHTML = '<svg><use href="#i-play"/></svg>Run segmentation';
+  if (message) document.getElementById("seg-out").textContent = message;
+}
+
+function hasWebGL2() {
+  try { return !!document.createElement("canvas").getContext("webgl2"); } catch { return false; }
 }
 
 function starts(size, win, overlap = 0.5) {
@@ -148,22 +159,31 @@ async function fetchModel(onProgress) {
 }
 
 async function runSegmentation() {
+  if (segWorker) { stopSegmentation("Stopped."); return; }
   const out = document.getElementById("seg-out");
   const bar = document.getElementById("seg-progress");
   const caseId = document.getElementById("seg-case").value;
   const index = await getJSON("data/cases/index.json");
   const c = index.cases.find((x) => x.id === caseId);
+  if (!hasWebGL2()) {
+    out.textContent = "This browser has WebGL2 switched off, and the result is drawn with it. In Chrome or Edge, turn on " +
+      "Settings > System > Use graphics acceleration when available and restart the browser; the tumour viewer needs it too.";
+    return;
+  }
+  const gpu = !!navigator.gpu;
+  segWorker = new Worker(new URL("./seg-worker.js", import.meta.url), { type: "module" });
+  const worker = segWorker;
+  document.getElementById("seg-run").innerHTML = 'Stop';
   try {
-    out.textContent = "Loading ONNX Runtime";
-    const rt = await loadOrt();
     out.textContent = "Downloading the model from Hugging Face";
     const model = await fetchModel((got, total) => {
       out.textContent = `Downloading the model from Hugging Face: ${(got / 1e6).toFixed(1)} of ${(total / 1e6).toFixed(1)} MB`;
       if (bar) bar.style.width = `${Math.min(100, Math.round(100 * got / total))}%`;
     });
+    if (worker !== segWorker) return;
     out.textContent = "Starting the network";
     if (bar) bar.style.width = "0%";
-    const session = await rt.InferenceSession.create(model, { executionProviders: navigator.gpu ? ["webgpu", "wasm"] : ["wasm"] });
+    await ask(worker, { type: "init", model, ortUrl: ORT, gpu }, [model.buffer]);
     // The viewer volumes are the cropped scan, one 8-bit file per contrast, X fastest.
     const { Niivue } = await import("https://cdn.jsdelivr.net/npm/@niivue/niivue@0.69.0/+esm");
     if (!segViewer) {
@@ -200,9 +220,10 @@ async function runSegmentation() {
         const src = ((ch * nx + x0 + x) * ny + y0 + y) * nz + z0;
         tile.set(image.subarray(src, src + win[2]), ((ch * win[0] + x) * win[1] + y) * win[2]);
       }
-      out.textContent = `Window ${done + 1} of ${boxes.length}`;
-      const res = await session.run({ image: new rt.Tensor("float32", tile, [1, 4, ...win]) });
-      const logits = res.logits.data;
+      if (worker !== segWorker) return;
+      out.textContent = `Window ${done + 1} of ${boxes.length}` +
+        (gpu ? "" : " (without WebGPU each window takes about a minute; the page stays usable)");
+      const { logits } = await ask(worker, { type: "run", tile, dims: [1, 4, ...win] }, [tile.buffer]);
       for (let r = 0; r < 3; r++) for (let x = 0; x < win[0]; x++) for (let y = 0; y < win[1]; y++) for (let z = 0; z < win[2]; z++) {
         const w = wts[(x * win[1] + y) * win[2] + z];
         const p = 1 / (1 + Math.exp(-logits[((r * win[0] + x) * win[1] + y) * win[2] + z]));
@@ -228,9 +249,11 @@ async function runSegmentation() {
     segViewer.addVolume(seg);
     segViewer.setOpacity(1, 0.6);
     segViewer.updateGLVolume();
+    stopSegmentation();
     out.textContent = `Done: ${counts[0].toLocaleString()} oedema, ${counts[1].toLocaleString()} non-enhancing and ${counts[2].toLocaleString()} enhancing voxels (one pass, no mirror averaging).`;
   } catch (err) {
-    out.textContent = `Could not run the model here (${err.message ?? err}). The same network runs with the Rust binary or the Docker image.`;
+    if (worker !== segWorker) return;
+    stopSegmentation(`Could not run the model here (${err.message ?? err}). The same network runs with the Rust binary or the Docker image.`);
   }
 }
 

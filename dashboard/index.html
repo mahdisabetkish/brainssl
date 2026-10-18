@@ -408,7 +408,7 @@
           <div class="toolbar"><select id="seg-case" aria-label="Scan"></select>
             <button class="btn primary" id="seg-run" type="button"><svg><use href="#i-play"/></svg>Run segmentation</button></div>
           <div class="progress" aria-hidden="true"><i id="seg-progress"></i></div>
-          <div id="seg-out" class="muted small">Downloads about 43 MB once. Uses WebGPU when your browser has it, otherwise WebAssembly.</div>
+          <div id="seg-out" class="muted small">Downloads about 43 MB once, then runs four windows in a background thread: a few minutes on the CPU, faster with WebGPU. The page stays usable meanwhile.</div>
           <div class="viewer-wrap" style="height:340px"><canvas id="seg-canvas"></canvas></div>
         </article>
       </div>
