@@ -115,6 +115,38 @@ function gaussian(shape, scale = 0.125) {
   return w;
 }
 
+// The network is 43 MB. It is streamed with a progress readout and kept in the browser's cache, so a second
+// visit starts at once.
+async function fetchModel(onProgress) {
+  let cache = null;
+  try {
+    cache = await caches.open("brainssl-models-v1");
+    const hit = await cache.match(HF_MODEL);
+    if (hit) return new Uint8Array(await hit.arrayBuffer());
+  } catch { cache = null; }
+  const response = await fetch(HF_MODEL);
+  if (!response.ok) throw new Error(`model download failed (${response.status})`);
+  const total = Number(response.headers.get("content-length")) || 43.2e6;
+  const reader = response.body.getReader();
+  const chunks = [];
+  let received = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    received += value.length;
+    onProgress(received, total);
+  }
+  const bytes = new Uint8Array(received);
+  let offset = 0;
+  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
+  if (cache) {
+    try { await cache.put(HF_MODEL, new Response(bytes, { headers: { "content-type": "application/octet-stream" } })); }
+    catch { /* storage full or blocked; the next visit downloads again */ }
+  }
+  return bytes;
+}
+
 async function runSegmentation() {
   const out = document.getElementById("seg-out");
   const bar = document.getElementById("seg-progress");
@@ -125,7 +157,13 @@ async function runSegmentation() {
     out.textContent = "Loading ONNX Runtime";
     const rt = await loadOrt();
     out.textContent = "Downloading the model from Hugging Face";
-    const session = await rt.InferenceSession.create(HF_MODEL, { executionProviders: navigator.gpu ? ["webgpu", "wasm"] : ["wasm"] });
+    const model = await fetchModel((got, total) => {
+      out.textContent = `Downloading the model from Hugging Face: ${(got / 1e6).toFixed(1)} of ${(total / 1e6).toFixed(1)} MB`;
+      if (bar) bar.style.width = `${Math.min(100, Math.round(100 * got / total))}%`;
+    });
+    out.textContent = "Starting the network";
+    if (bar) bar.style.width = "0%";
+    const session = await rt.InferenceSession.create(model, { executionProviders: navigator.gpu ? ["webgpu", "wasm"] : ["wasm"] });
     // The viewer volumes are the cropped scan, one 8-bit file per contrast, X fastest.
     const { Niivue } = await import("https://cdn.jsdelivr.net/npm/@niivue/niivue@0.69.0/+esm");
     if (!segViewer) {
